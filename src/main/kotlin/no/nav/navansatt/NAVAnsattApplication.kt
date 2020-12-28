@@ -60,7 +60,7 @@ fun appConfigLocal() = ApplicationConfig(
     adBase = "DC=test,DC=local",
     adUsername = "",
     adPassword = "",
-    azureWellKnown = "http://localhost:8060/rest/AzureAd/123456/v2.0/.well-known/openid-configuration/",
+    azureWellKnown = "http://localhost:8060/rest/AzureAd/123456/v2.0/.well-known/openid-configuration",
     openamWellKnown = "http://localhost:8060/rest/isso/oauth2/.well-known/openid-configuration",
     axsysUrl = "https://axsys.dev.adeo.no"
 )
