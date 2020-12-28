@@ -1,0 +1,40 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: "navansatt"
+  namespace: "pensjondeployer"
+  labels:
+    team: "pensjondeployer"
+spec:
+  image: "{{{ image }}}"
+  port: 7000
+  replicas:
+    min: 2
+    max: 4
+  liveness:
+    path: "/isalive"
+    initialDelay: 3
+    timeout: 1
+  readiness:
+    path: "/isalive"
+    initialDelay: 3
+    timeout: 1
+  ingresses:
+    - "https://navansatt.intern.nav.no"
+  azure:
+    application:
+      enabled: true
+      tenant: nav.no
+    webproxy: true
+  env:
+    - name: "LDAP_URL"
+      value: "ldaps://ldapgw.adeo.no"
+    - name: "LDAP_BASE"
+      value: "dc=adeo,dc=no"
+    - name: "AXSYS_URL"
+      value: "https://axsys.intern.nav.no/"
+  vault:
+    enabled: true
+    paths:
+      - kvPath: "serviceuser/data/prod/srvssolinux"
+        mountPath: "/secrets/ldap"

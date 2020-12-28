@@ -12,6 +12,7 @@ import io.ktor.locations.Locations
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.routing
+import io.ktor.routing.get as simpleGet
 import io.ktor.serialization.json
 import io.ktor.server.engine.embeddedServer
 import kotlinx.coroutines.async
@@ -34,10 +35,10 @@ data class ApiError(
 )
 
 class ApplicationConfig(
-    val adUrl: String = System.getenv("AD_URL") ?: "ldap://localhost:8389",
-    val adBase: String = System.getenv("AD_BASE") ?: "DC=test,DC=local",
-    val adUsername: String = System.getenv("AD_USERNAME") ?: "",
-    val adPassword: String = System.getenv("AD_PASSWORD") ?: "",
+    val adUrl: String = System.getenv("LDAP_URL") ?: "ldap://localhost:8389",
+    val adBase: String = System.getenv("LDAP_BASE") ?: "DC=test,DC=local",
+    val adUsername: String = System.getenv("LDAP_USERNAME") ?: "",
+    val adPassword: String = System.getenv("LDAP_PASSWORD") ?: "",
     val axsysUrl: String = System.getenv("AXSYS_URL") ?: "https://axsys.dev.adeo.no"
 )
 
@@ -78,6 +79,13 @@ fun main() {
         }
 
         routing {
+            simpleGet("/isalive") {
+                call.respond("OK")
+            }
+            simpleGet("/isready") {
+                call.respond("OK")
+            }
+
             @Location("/navansatt/{ident}")
             data class GetNAVAnsattLocation(val ident: String)
             get<GetNAVAnsattLocation> { location ->
