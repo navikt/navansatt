@@ -21,6 +21,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import java.io.File
+import java.lang.RuntimeException
 import io.ktor.routing.get as simpleGet
 
 @Serializable
@@ -37,17 +38,33 @@ data class ApiError(
     val message: String
 )
 
-class ApplicationConfig(
-    val adUrl: String = System.getenv("LDAP_URL") ?: "ldap://localhost:8389",
-    val adBase: String = System.getenv("LDAP_BASE") ?: "DC=test,DC=local",
-    val adUsername: String = System.getenv("LDAP_USERNAME") ?: "",
-    val adPassword: String = System.getenv("LDAP_PASSWORD") ?: "",
-    val axsysUrl: String = System.getenv("AXSYS_URL") ?: "https://axsys.dev.adeo.no"
+data class ApplicationConfig(
+    val adUrl: String,
+    val adBase: String,
+    val adUsername: String,
+    val adPassword: String,
+    val axsysUrl: String
+)
+
+fun appConfigLocal() = ApplicationConfig(
+    adUrl = "ldap://localhost:8389",
+    adBase = "DC=test,DC=local",
+    adUsername = File("secrets/ldap/username").readText(),
+    adPassword = File("secrets/ldap/password").readText(),
+    axsysUrl = "https://axsys.dev.adeo.no"
+)
+
+fun appConfigNais() = ApplicationConfig(
+    adUrl = System.getenv("LDAP_URL") ?: throw RuntimeException("Missing LDAP_URL environment variable."),
+    adBase = System.getenv("LDAP_BASE") ?: throw RuntimeException("Missing LDAP_BASE environment variable."),
+    adUsername = File("/secrets/ldap/username").readText(),
+    adPassword = File("/secrets/ldap/password").readText(),
+    axsysUrl = System.getenv("AXSYS_URL") ?: throw RuntimeException("Missing AXSYS_URL environment variable."),
 )
 
 @KtorExperimentalLocationsAPI
 fun main() {
-    val config = ApplicationConfig()
+    val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
 
     val truststorePath: String? = System.getenv("NAV_TRUSTSTORE_PATH")
     truststorePath?.let {
