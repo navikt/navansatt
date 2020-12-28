@@ -36,6 +36,8 @@ spec:
       value: "dc=adeo,dc=no"
     - name: "AXSYS_URL"
       value: "https://axsys.intern.nav.no/"
+    - name: "OPENAM_WELL_KNOWN_URL"
+      value: "https://isso.adeo.no/isso/oauth2/.well-known/openid-configuration"
   vault:
     enabled: true
     paths:

@@ -1,8 +1,13 @@
 package no.nav.navansatt
 
+import com.auth0.jwk.UrlJwkProvider
 import io.ktor.application.call
 import io.ktor.application.install
 import io.ktor.application.log
+import io.ktor.auth.Authentication
+import io.ktor.auth.authenticate
+import io.ktor.auth.authentication
+import io.ktor.auth.jwt.jwt
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
 import io.ktor.http.HttpStatusCode
@@ -19,9 +24,11 @@ import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.Serializable
 import java.io.File
 import java.lang.RuntimeException
+import java.net.URL
 import io.ktor.routing.get as simpleGet
 
 @Serializable
@@ -43,6 +50,8 @@ data class ApplicationConfig(
     val adBase: String,
     val adUsername: String,
     val adPassword: String,
+    val azureWellKnown: String,
+    val openamWellKnown: String,
     val axsysUrl: String
 )
 
@@ -51,6 +60,8 @@ fun appConfigLocal() = ApplicationConfig(
     adBase = "DC=test,DC=local",
     adUsername = File("secrets/ldap/username").readText(),
     adPassword = File("secrets/ldap/password").readText(),
+    azureWellKnown = "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration",
+    openamWellKnown = "https://isso-q.adeo.no/isso/oauth2/.well-known/openid-configuration",
     axsysUrl = "https://axsys.dev.adeo.no"
 )
 
@@ -59,6 +70,8 @@ fun appConfigNais() = ApplicationConfig(
     adBase = System.getenv("LDAP_BASE") ?: throw RuntimeException("Missing LDAP_BASE environment variable."),
     adUsername = File("/secrets/ldap/username").readText(),
     adPassword = File("/secrets/ldap/password").readText(),
+    azureWellKnown = System.getenv("AZURE_APP_WELL_KNOWN_URL") ?: throw RuntimeException("Missing AZURE_APP_WELL_KNOWN_URL environment variable."),
+    openamWellKnown = System.getenv("OPENAM_WELL_KNOWN_URL") ?: throw RuntimeException("Missing OPENAM_WELL_KNOWN_URL environment variable."),
     axsysUrl = System.getenv("AXSYS_URL") ?: throw RuntimeException("Missing AXSYS_URL environment variable."),
 )
 
@@ -66,6 +79,7 @@ fun appConfigNais() = ApplicationConfig(
 fun main() {
     val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
 
+    /*
     val truststorePath: String? = System.getenv("NAV_TRUSTSTORE_PATH")
     truststorePath?.let {
         System.setProperty("javax.net.ssl.trustStore", it)
@@ -74,6 +88,7 @@ fun main() {
         System.setProperty("javax.net.ssl.trustStore", "secrets/truststore/truststore.jts")
         System.setProperty("javax.net.ssl.trustStorePassword", File("secrets/truststore/password").readText())
     }
+     */
 
     val ad = ActiveDirectoryClient(
         url = config.adUrl,
@@ -84,6 +99,9 @@ fun main() {
     val ax = AxsysClient(
         axsysUrl = config.axsysUrl
     )
+
+    val azureOidc = runBlocking { oidcDiscovery(config.azureWellKnown) }
+    val openamOidc = runBlocking { oidcDiscovery(config.openamWellKnown) }
 
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
         val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -100,6 +118,26 @@ fun main() {
                 call.response.status(HttpStatusCode.InternalServerError)
                 call.respond(ApiError(message = "Internal server error (${cause::class.java.canonicalName})"))
             }
+
+            status(HttpStatusCode.Unauthorized) {
+                log.warn("Denied anauthorized access.")
+                call.respond(ApiError(message = "Access Denied"))
+            }
+        }
+        install(Authentication) {
+            jwt("azure") {
+                verifier(
+                    UrlJwkProvider(URL(azureOidc.jwks_uri)),
+                    azureOidc.issuer
+                )
+            }
+
+            jwt("openam") {
+                verifier(
+                    UrlJwkProvider(URL(openamOidc.jwks_uri)),
+                    openamOidc.issuer
+                )
+            }
         }
 
         routing {
@@ -111,6 +149,13 @@ fun main() {
             }
             simpleGet("/internal/isready") {
                 call.respond("OK")
+            }
+
+            authenticate("azure", "openam") {
+                simpleGet("/foo") {
+                    call.respond("Must be authenticated on this endpoint. It was successful!")
+                    log.info("Authenticated as", call.authentication.principal)
+                }
             }
 
             @Location("/navansatt/{ident}")
