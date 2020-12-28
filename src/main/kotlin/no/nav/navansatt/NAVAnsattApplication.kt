@@ -116,6 +116,7 @@ fun main() {
             @Location("/navansatt/{ident}")
             data class GetNAVAnsattLocation(val ident: String)
             get<GetNAVAnsattLocation> { location ->
+                throw RuntimeException("TODO: dette endpointet må ha autentisering")
                 val result = ad.getUser(location.ident)
                 result?.let {
                     call.respond(
@@ -139,6 +140,7 @@ fun main() {
             @Location("/enhet/{enhetId}/navansatte")
             data class GetEnhetAnsatte(val enhetId: String)
             get<GetEnhetAnsatte> { location ->
+                throw RuntimeException("TODO: dette endpointet må ha autentisering")
                 try {
                     val result = ax.hentAnsattIdenter(location.enhetId)
 
