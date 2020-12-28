@@ -20,6 +20,7 @@ spec:
     initialDelay: 3
     timeout: 1
   ingresses:
+    - "https://navansatt.dev.adeo.no"
     - "https://navansatt.dev.intern.nav.no"
   azure:
     application:
