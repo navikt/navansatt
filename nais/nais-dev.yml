@@ -29,7 +29,7 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
-    webproxy: true
+  webproxy: true
   env:
     - name: "LDAP_URL"
       value: "ldaps://ldapgw.preprod.local"

@@ -28,7 +28,7 @@ spec:
     application:
       enabled: true
       tenant: nav.no
-    webproxy: true
+  webproxy: true
   env:
     - name: "LDAP_URL"
       value: "ldaps://ldapgw.adeo.no"
