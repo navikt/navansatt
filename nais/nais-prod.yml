@@ -12,11 +12,14 @@ spec:
     min: 2
     max: 4
   liveness:
-    path: "/isalive"
+    path: "/internal/isalive"
     initialDelay: 3
     timeout: 1
+  prometheus:
+    enabled: true
+    path: "/internal/metrics"
   readiness:
-    path: "/isalive"
+    path: "/internal/isready"
     initialDelay: 3
     timeout: 1
   ingresses:

@@ -10,10 +10,13 @@ import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.Locations
 import io.ktor.locations.get
+import io.ktor.metrics.micrometer.MicrometerMetrics
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.serialization.json
 import io.ktor.server.engine.embeddedServer
+import io.micrometer.prometheus.PrometheusConfig
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
@@ -66,6 +69,10 @@ fun main() {
     )
 
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
+        val appMicrometerRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
+        install(MicrometerMetrics) {
+            registry = appMicrometerRegistry
+        }
         install(Locations)
         install(ContentNegotiation) {
             json()
@@ -79,10 +86,13 @@ fun main() {
         }
 
         routing {
-            simpleGet("/isalive") {
+            simpleGet("/internal/metrics") {
+                call.respond(appMicrometerRegistry.scrape())
+            }
+            simpleGet("/internal/isalive") {
                 call.respond("OK")
             }
-            simpleGet("/isready") {
+            simpleGet("/internal/isready") {
                 call.respond("OK")
             }
 
