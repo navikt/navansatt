@@ -12,13 +12,13 @@ import io.ktor.locations.Locations
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.routing.routing
-import io.ktor.routing.get as simpleGet
 import io.ktor.serialization.json
 import io.ktor.server.engine.embeddedServer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import java.io.File
+import io.ktor.routing.get as simpleGet
 
 @Serializable
 data class UserResult(
