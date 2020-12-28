@@ -56,7 +56,7 @@ class ActiveDirectoryClient(
                 displayName = readAttribute(entry.attributes, "displayname"),
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
-                email = readAttribute(entry.attributes, "mail"),
+                email = readEmail(entry.attributes),
                 groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
             )
         }
@@ -70,6 +70,23 @@ class ActiveDirectoryClient(
         return attrs[key]?.get()?.toString() ?: run {
             LOG.warn("LDAP object has no attribute \"$key\", defaulting to empty string.")
             return ""
+        }
+    }
+
+    private fun readEmail(attrs: Attributes): String {
+        return attrs["mail"]?.get()?.toString() ?: run {
+            val upn = attrs["userprincipalname"]?.get()?.toString()
+            upn?.let {
+                if (it.contains('@')) {
+                    return@run it
+                } else {
+                    LOG.warn("LDAP object has no attribute \"mail\", and its attribute \"upn\" seems like it's not an email address. Fallback to empty string.")
+                    return ""
+                }
+            } ?: run {
+                LOG.warn("LDAP object had neither a \"mail\" attribute or \"upn\" attribute. Fallback to empty string.")
+                return ""
+            }
         }
     }
 

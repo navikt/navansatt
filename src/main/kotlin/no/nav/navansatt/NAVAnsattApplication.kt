@@ -17,6 +17,7 @@ import io.ktor.server.engine.embeddedServer
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
+import java.io.File
 
 @Serializable
 data class UserResult(
@@ -43,6 +44,15 @@ class ApplicationConfig(
 @KtorExperimentalLocationsAPI
 fun main() {
     val config = ApplicationConfig()
+
+    val truststorePath: String? = System.getenv("NAV_TRUSTSTORE_PATH")
+    truststorePath?.let {
+        System.setProperty("javax.net.ssl.trustStore", it)
+        System.setProperty("javax.net.ssl.trustStorePassword", System.getenv("NAV_TRUSTSTORE_PASSWORD") ?: "")
+    } ?: run {
+        System.setProperty("javax.net.ssl.trustStore", "secrets/truststore/truststore.jts")
+        System.setProperty("javax.net.ssl.trustStorePassword", File("secrets/truststore/password").readText())
+    }
 
     val ad = ActiveDirectoryClient(
         url = config.adUrl,
@@ -94,15 +104,32 @@ fun main() {
             @Location("/enhet/{enhetId}/navansatte")
             data class GetEnhetAnsatte(val enhetId: String)
             get<GetEnhetAnsatte> { location ->
-                val result = ax.hentAnsattIdenter(location.enhetId)
+                try {
+                    val result = ax.hentAnsattIdenter(location.enhetId)
 
-                val deferreds = result.map { ansatt ->
-                    async {
-                        ad.getUser(ansatt.appIdent)
+                    val deferreds = result.map { ansatt ->
+                        async {
+                            ad.getUser(ansatt.appIdent)
+                        }
                     }
+                    val userData: List<UserResult> = deferreds.awaitAll().filterNotNull().map {
+                        UserResult(
+                            ident = it.ident,
+                            displayName = it.displayName,
+                            firstName = it.firstName,
+                            lastName = it.lastName,
+                            email = it.email
+                        )
+                    }
+                    call.respond(userData)
+                } catch (err: EnhetNotFoundError) {
+                    call.response.status(HttpStatusCode.NotFound)
+                    call.respond(
+                        ApiError(
+                            message = "Fant ikke NAV-enhet med id ${location.enhetId}"
+                        )
+                    )
                 }
-                val userData: List<User> = deferreds.awaitAll().filterNotNull()
-                call.respond(userData)
             }
         }
     }.apply { start(wait = true) }
