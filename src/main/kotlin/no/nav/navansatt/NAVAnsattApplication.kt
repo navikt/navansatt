@@ -6,7 +6,7 @@ import io.ktor.application.install
 import io.ktor.application.log
 import io.ktor.auth.Authentication
 import io.ktor.auth.authenticate
-import io.ktor.auth.authentication
+import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.features.ContentNegotiation
 import io.ktor.features.StatusPages
@@ -58,10 +58,10 @@ data class ApplicationConfig(
 fun appConfigLocal() = ApplicationConfig(
     adUrl = "ldap://localhost:8389",
     adBase = "DC=test,DC=local",
-    adUsername = File("secrets/ldap/username").readText(),
-    adPassword = File("secrets/ldap/password").readText(),
-    azureWellKnown = "https://login.microsoftonline.com/966ac572-f5b7-4bbe-aa88-c76419c0f851/v2.0/.well-known/openid-configuration",
-    openamWellKnown = "https://isso-q.adeo.no/isso/oauth2/.well-known/openid-configuration",
+    adUsername = "",
+    adPassword = "",
+    azureWellKnown = "http://localhost:8060/rest/AzureAd/123456/v2.0/.well-known/openid-configuration/",
+    openamWellKnown = "http://localhost:8060/rest/isso/oauth2/.well-known/openid-configuration",
     axsysUrl = "https://axsys.dev.adeo.no"
 )
 
@@ -130,6 +130,7 @@ fun main() {
                     UrlJwkProvider(URL(azureOidc.jwks_uri)),
                     azureOidc.issuer
                 )
+                validate { credential -> JWTPrincipal(credential.payload) }
             }
 
             jwt("openam") {
@@ -137,6 +138,7 @@ fun main() {
                     UrlJwkProvider(URL(openamOidc.jwks_uri)),
                     openamOidc.issuer
                 )
+                validate { credential -> JWTPrincipal(credential.payload) }
             }
         }
 
@@ -152,65 +154,59 @@ fun main() {
             }
 
             authenticate("azure", "openam") {
-                simpleGet("/foo") {
-                    call.respond("Must be authenticated on this endpoint. It was successful!")
-                    log.info("Authenticated as", call.authentication.principal)
-                }
-            }
-
-            @Location("/navansatt/{ident}")
-            data class GetNAVAnsattLocation(val ident: String)
-            get<GetNAVAnsattLocation> { location ->
-                throw RuntimeException("TODO: dette endpointet må ha autentisering")
-                val result = ad.getUser(location.ident)
-                result?.let {
-                    call.respond(
-                        UserResult(
-                            ident = location.ident,
-                            displayName = it.displayName,
-                            firstName = it.firstName,
-                            lastName = it.lastName,
-                            email = it.email
+                @Location("/navansatt/{ident}")
+                data class GetNAVAnsattLocation(val ident: String)
+                get<GetNAVAnsattLocation> { location ->
+                    val result = ad.getUser(location.ident)
+                    result?.let {
+                        call.respond(
+                            UserResult(
+                                ident = location.ident,
+                                displayName = it.displayName,
+                                firstName = it.firstName,
+                                lastName = it.lastName,
+                                email = it.email
+                            )
                         )
-                    )
-                } ?: run {
-                    call.response.status(HttpStatusCode.NotFound)
-                    call.respond(
-                        ApiError(
-                            message = "User not found"
+                    } ?: run {
+                        call.response.status(HttpStatusCode.NotFound)
+                        call.respond(
+                            ApiError(
+                                message = "User not found"
+                            )
                         )
-                    )
+                    }
                 }
-            }
-            @Location("/enhet/{enhetId}/navansatte")
-            data class GetEnhetAnsatte(val enhetId: String)
-            get<GetEnhetAnsatte> { location ->
-                throw RuntimeException("TODO: dette endpointet må ha autentisering")
-                try {
-                    val result = ax.hentAnsattIdenter(location.enhetId)
 
-                    val deferreds = result.map { ansatt ->
-                        async {
-                            ad.getUser(ansatt.appIdent)
+                @Location("/enhet/{enhetId}/navansatte")
+                data class GetEnhetAnsatte(val enhetId: String)
+                get<GetEnhetAnsatte> { location ->
+                    try {
+                        val result = ax.hentAnsattIdenter(location.enhetId)
+
+                        val deferreds = result.map { ansatt ->
+                            async {
+                                ad.getUser(ansatt.appIdent)
+                            }
                         }
-                    }
-                    val userData: List<UserResult> = deferreds.awaitAll().filterNotNull().map {
-                        UserResult(
-                            ident = it.ident,
-                            displayName = it.displayName,
-                            firstName = it.firstName,
-                            lastName = it.lastName,
-                            email = it.email
+                        val userData: List<UserResult> = deferreds.awaitAll().filterNotNull().map {
+                            UserResult(
+                                ident = it.ident,
+                                displayName = it.displayName,
+                                firstName = it.firstName,
+                                lastName = it.lastName,
+                                email = it.email
+                            )
+                        }
+                        call.respond(userData)
+                    } catch (err: EnhetNotFoundError) {
+                        call.response.status(HttpStatusCode.NotFound)
+                        call.respond(
+                            ApiError(
+                                message = "Fant ikke NAV-enhet med id ${location.enhetId}"
+                            )
                         )
                     }
-                    call.respond(userData)
-                } catch (err: EnhetNotFoundError) {
-                    call.response.status(HttpStatusCode.NotFound)
-                    call.respond(
-                        ApiError(
-                            message = "Fant ikke NAV-enhet med id ${location.enhetId}"
-                        )
-                    )
                 }
             }
         }
