@@ -25,6 +25,9 @@ suspend fun oidcDiscovery(wellknownUrl: String): OIDCMetadata {
         engine {
             sslContext = SSLContexts.createSystemDefault()
             connectTimeout = 2
+            customizeClient {
+                useSystemProperties()
+            }
         }
         install(HttpCache)
         install(JsonFeature) {
