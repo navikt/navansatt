@@ -1,8 +1,6 @@
 package no.nav.navansatt
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.ProxyBuilder
-import io.ktor.client.engine.ProxyConfig
 import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.ClientRequestException
 import io.ktor.client.features.cache.HttpCache
@@ -13,7 +11,6 @@ import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.Url
 import kotlinx.serialization.Serializable
 import org.apache.http.ssl.SSLContexts
 import org.slf4j.LoggerFactory
