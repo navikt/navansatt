@@ -40,5 +40,5 @@ spec:
   vault:
     enabled: true
     paths:
-      - kvPath: "serviceuser/data/test/srvssolinux"
+      - kvPath: "serviceuser/data/dev/srvssolinux"
         mountPath: "/secrets/ldap"
