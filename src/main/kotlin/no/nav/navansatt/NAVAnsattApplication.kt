@@ -45,6 +45,12 @@ data class ApiError(
     val message: String
 )
 
+@Serializable
+data class NAVEnhetResult(
+    val id: String,
+    val navn: String
+)
+
 data class ApplicationConfig(
     val adUrl: String,
     val adBase: String,
@@ -62,7 +68,7 @@ fun appConfigLocal() = ApplicationConfig(
     adPassword = "",
     azureWellKnown = "http://localhost:8060/rest/AzureAd/123456/v2.0/.well-known/openid-configuration",
     openamWellKnown = "http://localhost:8060/rest/isso/oauth2/.well-known/openid-configuration",
-    axsysUrl = "https://axsys.dev.adeo.no"
+    axsysUrl = "http://localhost:8080/rest/axsys"
 )
 
 fun appConfigNais() = ApplicationConfig(
@@ -176,6 +182,26 @@ fun main() {
                             )
                         )
                     }
+                }
+
+                @Location("/navansatt/{ident}/fagomrader")
+                data class GetNAVAnsattFagomraderLocation(val ident: String)
+                get<GetNAVAnsattFagomraderLocation> { location ->
+                    val result = ax.hentTilganger(location.ident)
+                    val response: List<String> = result.enheter.flatMap { it.fagomrader }.distinct()
+                    call.respond(response)
+                }
+
+                @Location("/navansatt/{ident}/enheter")
+                data class GetNAVAnsattEnheterLocation(val ident: String)
+                get<GetNAVAnsattEnheterLocation> { location ->
+                    val result = ax.hentTilganger(location.ident)
+                    call.respond(result.enheter.map {
+                        NAVEnhetResult(
+                            id = it.enhetId,
+                            navn = it.navn
+                        )
+                    })
                 }
 
                 @Location("/enhet/{enhetId}/navansatte")
