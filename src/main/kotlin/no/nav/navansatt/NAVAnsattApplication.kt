@@ -61,14 +61,15 @@ data class ApplicationConfig(
     val axsysUrl: String
 )
 
+val vtp = "http://localhost:8060"
 fun appConfigLocal() = ApplicationConfig(
     adUrl = "ldap://localhost:8389",
     adBase = "DC=test,DC=local",
     adUsername = "",
     adPassword = "",
-    azureWellKnown = "http://localhost:8060/rest/AzureAd/123456/v2.0/.well-known/openid-configuration",
-    openamWellKnown = "http://localhost:8060/rest/isso/oauth2/.well-known/openid-configuration",
-    axsysUrl = "http://localhost:8080/rest/axsys"
+    azureWellKnown = "$vtp/rest/AzureAd/123456/v2.0/.well-known/openid-configuration",
+    openamWellKnown = "$vtp/rest/isso/oauth2/.well-known/openid-configuration",
+    axsysUrl = "$vtp/rest/axsys"
 )
 
 fun appConfigNais() = ApplicationConfig(
@@ -236,5 +237,5 @@ fun main() {
                 }
             }
         }
-    }.apply { start(wait = true) }
+    }.start(wait = true)
 }
