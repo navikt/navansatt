@@ -20,7 +20,7 @@ data class OIDCMetadata(
 
 private val LOG = LoggerFactory.getLogger(OIDCMetadata::class.java)
 
-suspend fun oidcDiscovery(wellknownUrl: String): OIDCMetadata {
+suspend fun discoverOidcMetadata(wellknownUrl: String): OIDCMetadata {
     val httpClient = HttpClient(Apache) {
         engine {
             sslContext = SSLContexts.createSystemDefault()
@@ -43,6 +43,7 @@ suspend fun oidcDiscovery(wellknownUrl: String): OIDCMetadata {
         val meta = httpClient.get<OIDCMetadata> {
             url(wellknownUrl)
         }
+        LOG.info("Discovered issuer ${meta.issuer} with JWKS URI ${meta.jwks_uri} (from OIDC endpoint $wellknownUrl)")
         return meta
     } catch (err: Exception) {
         LOG.error("Could not discover OIDC metadata at $wellknownUrl", err)
