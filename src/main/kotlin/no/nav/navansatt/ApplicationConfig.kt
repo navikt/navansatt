@@ -27,7 +27,6 @@ fun appConfigLocal() = ApplicationConfig(
 fun readEnv(name: String): String =
     System.getenv(name) ?: throw RuntimeException("Missing $name environment variable.")
 
-
 fun appConfigNais() = ApplicationConfig(
     adUrl = readEnv("LDAP_URL"),
     adBase = readEnv("LDAP_BASE"),
