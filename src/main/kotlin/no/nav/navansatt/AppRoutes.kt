@@ -14,18 +14,23 @@ import kotlinx.serialization.Serializable
 import io.ktor.routing.get as simpleGet
 
 @Serializable
-data class UserResult(
+data class NavAnsattResult(
     val ident: String,
-    val displayName: String,
-    val firstName: String,
-    val lastName: String,
-    val email: String
+    val navn: String,
+    val fornavn: String,
+    val etternavn: String,
+    val epost: String
 )
 
 @Serializable
 data class NAVEnhetResult(
     val id: String,
     val navn: String
+)
+
+@Serializable
+data class Fagomrade(
+    val kode: String
 )
 
 fun Routing.AppRoutes(
@@ -50,12 +55,12 @@ fun Routing.AppRoutes(
             val result = activeDirectoryClient.getUser(location.ident)
             result?.let {
                 call.respond(
-                    UserResult(
+                    NavAnsattResult(
                         ident = location.ident,
-                        displayName = it.displayName,
-                        firstName = it.firstName,
-                        lastName = it.lastName,
-                        email = it.email
+                        navn = it.displayName,
+                        fornavn = it.firstName,
+                        etternavn = it.lastName,
+                        epost = it.email
                     )
                 )
             } ?: run {
@@ -72,7 +77,9 @@ fun Routing.AppRoutes(
         data class GetNAVAnsattFagomraderLocation(val ident: String)
         get<GetNAVAnsattFagomraderLocation> { location ->
             val result = axsysClient.hentTilganger(location.ident)
-            val response: List<String> = result.enheter.flatMap { it.fagomrader }.distinct()
+            val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
+                Fagomrade(kode = it)
+            }
             call.respond(response)
         }
 
@@ -101,16 +108,16 @@ fun Routing.AppRoutes(
                         activeDirectoryClient.getUser(ansatt.appIdent)
                     }
                 }
-                val userData: List<UserResult> = deferreds.awaitAll().filterNotNull().map {
-                    UserResult(
+                val navAnsattData: List<NavAnsattResult> = deferreds.awaitAll().filterNotNull().map {
+                    NavAnsattResult(
                         ident = it.ident,
-                        displayName = it.displayName,
-                        firstName = it.firstName,
-                        lastName = it.lastName,
-                        email = it.email
+                        navn = it.displayName,
+                        fornavn = it.firstName,
+                        etternavn = it.lastName,
+                        epost = it.email
                     )
                 }
-                call.respond(userData)
+                call.respond(navAnsattData)
             } catch (err: EnhetNotFoundError) {
                 call.response.status(HttpStatusCode.NotFound)
                 call.respond(

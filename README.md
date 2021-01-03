@@ -19,10 +19,10 @@ Respons: (eksempel)
 ```
 {
   "ident": "darthvad",
-  "displayName": "Darth Vader",
-  "firstName": "Darth",
-  "lastName": "Vader",
-  "email": "darth.vader@hollywood.com"
+  "navn": "Darth Vader",
+  "fornavn": "Darth",
+  "etternavn": "Vader",
+  "epost": "darth.vader@hollywood.com"
 }
 ```
 
@@ -34,7 +34,13 @@ GET /navansatt/<ident>/fagomrader
 
 Respons: (eksempel)
 ```
-["PEN", "UFO", "GOS"]
+[{
+  "kode": "PEN"
+},{
+  "kode": UFO"
+},{
+ "kode": "GOS"
+}]
 ```
 
 ### Hent enheter for en ansatt
@@ -63,15 +69,15 @@ Respons: (eksempel)
 ```
 [{
   "ident": "darthvad",
-  "displayName": "Darth Vader",
-  "firstName": "Darth",
-  "lastName": "Vader",
-  "email": "darth.vader@hollywood.com"
+  "navn": "Darth Vader",
+  "fornavn": "Darth",
+  "etternavn": "Vader",
+  "epost": "darth.vader@hollywood.com"
 }, {
   "ident": "lukesky",
-  "displayName": "Luke Skywalker",
-  "firstName": "Luke",
-  "lastName": "Skywalker",
-  "email": "luke.skywalker@hollywood.com"
+  "navn": "Luke Skywalker",
+  "fornavn": "Luke",
+  "etternavn": "Skywalker",
+  "epost": "luke.skywalker@hollywood.com"
 }]
 ```
