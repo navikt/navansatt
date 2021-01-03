@@ -81,3 +81,9 @@ Respons: (eksempel)
   "epost": "luke.skywalker@hollywood.com"
 }]
 ```
+
+### Lokal utvikling
+
+1) Bygg med `mvn clean install`
+2) Start [vtp-pensjon](https://github.com/navikt/vtp-pensjon)
+3) Kjør main-metoden i `NAVAnsattApplication`.
