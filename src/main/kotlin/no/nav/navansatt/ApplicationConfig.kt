@@ -13,7 +13,7 @@ data class ApplicationConfig(
     val axsysUrl: String
 )
 
-val vtp = "http://localhost:8061"
+val vtp = "http://localhost:8060"
 fun appConfigLocal() = ApplicationConfig(
     adUrl = "ldap://localhost:8389",
     adBase = "DC=test,DC=local",
@@ -24,12 +24,16 @@ fun appConfigLocal() = ApplicationConfig(
     axsysUrl = "$vtp/rest/axsys"
 )
 
+fun readEnv(name: String): String =
+    System.getenv(name) ?: throw RuntimeException("Missing $name environment variable.")
+
+
 fun appConfigNais() = ApplicationConfig(
-    adUrl = System.getenv("LDAP_URL") ?: throw RuntimeException("Missing LDAP_URL environment variable."),
-    adBase = System.getenv("LDAP_BASE") ?: throw RuntimeException("Missing LDAP_BASE environment variable."),
+    adUrl = readEnv("LDAP_URL"),
+    adBase = readEnv("LDAP_BASE"),
     adUsername = File("/secrets/ldap/username").readText(),
     adPassword = File("/secrets/ldap/password").readText(),
-    azureWellKnown = System.getenv("AZURE_APP_WELL_KNOWN_URL") ?: throw RuntimeException("Missing AZURE_APP_WELL_KNOWN_URL environment variable."),
-    openamWellKnown = System.getenv("OPENAM_WELL_KNOWN_URL") ?: throw RuntimeException("Missing OPENAM_WELL_KNOWN_URL environment variable."),
-    axsysUrl = System.getenv("AXSYS_URL") ?: throw RuntimeException("Missing AXSYS_URL environment variable."),
+    azureWellKnown = readEnv("AZURE_APP_WELL_KNOWN_URL"),
+    openamWellKnown = readEnv("OPENAM_WELL_KNOWN_URL"),
+    axsysUrl = readEnv("AXSYS_URL")
 )

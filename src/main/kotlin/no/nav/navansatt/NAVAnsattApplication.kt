@@ -32,17 +32,6 @@ data class ApiError(
 fun main() {
     val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
 
-    /*
-    val truststorePath: String? = System.getenv("NAV_TRUSTSTORE_PATH")
-    truststorePath?.let {
-        System.setProperty("javax.net.ssl.trustStore", it)
-        System.setProperty("javax.net.ssl.trustStorePassword", System.getenv("NAV_TRUSTSTORE_PASSWORD") ?: "")
-    } ?: run {
-        System.setProperty("javax.net.ssl.trustStore", "secrets/truststore/truststore.jts")
-        System.setProperty("javax.net.ssl.trustStorePassword", File("secrets/truststore/password").readText())
-    }
-     */
-
     val activeDirectoryClient = ActiveDirectoryClient(
         url = config.adUrl,
         base = config.adBase,
