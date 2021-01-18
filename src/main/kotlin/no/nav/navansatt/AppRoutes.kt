@@ -38,6 +38,9 @@ fun Routing.AppRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient
 ) {
+    simpleGet("/ping") {
+        call.respond("OK")
+    }
     simpleGet("/internal/metrics") {
         call.respond(metricsRegistry.scrape())
     }
@@ -49,6 +52,10 @@ fun Routing.AppRoutes(
     }
 
     authenticate("azure", "openam") {
+        simpleGet("/ping-authenticated") {
+            call.respond("OK")
+        }
+
         @Location("/navansatt/{ident}")
         data class GetNAVAnsattLocation(val ident: String)
         get<GetNAVAnsattLocation> { location ->
