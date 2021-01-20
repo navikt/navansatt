@@ -2,14 +2,14 @@ package no.nav.navansatt
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
 import kotlinx.serialization.Serializable
 import io.ktor.routing.get as simpleGet
 
@@ -49,6 +49,12 @@ fun Routing.AppRoutes(
     }
     simpleGet("/internal/isready") {
         call.respond("OK")
+    }
+    simpleGet("/") {
+        call.respondText(
+            "<!doctype html><html><head><title>NAV-ansatt REST API</title></head><body>Her kjører <a href=\"https://github.com/navikt/navansatt\">NAV-ansatt-API-et</a>.</body></html>",
+            ContentType.parse("text/html")
+        )
     }
 
     authenticate("azure", "openam") {
@@ -110,12 +116,9 @@ fun Routing.AppRoutes(
             try {
                 val result = axsysClient.hentAnsattIdenter(location.enhetId)
 
-                val deferreds = result.map { ansatt ->
-                    async {
-                        activeDirectoryClient.getUser(ansatt.appIdent)
-                    }
-                }
-                val navAnsattData: List<NavAnsattResult> = deferreds.awaitAll().filterNotNull().map {
+                val allUsers = activeDirectoryClient.getUsers(result.map { it.appIdent })
+
+                val navAnsattData: List<NavAnsattResult> = allUsers.map {
                     NavAnsattResult(
                         ident = it.ident,
                         navn = it.displayName,

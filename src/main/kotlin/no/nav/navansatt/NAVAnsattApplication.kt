@@ -61,7 +61,7 @@ fun main() {
             }
 
             status(HttpStatusCode.Unauthorized) {
-                log.warn("Denied anauthorized access.")
+                log.warn("Denied unauthorized access.")
                 call.respond(ApiError(message = "Access Denied"))
             }
         }

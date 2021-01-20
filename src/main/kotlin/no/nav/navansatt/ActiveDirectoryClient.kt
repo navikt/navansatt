@@ -10,6 +10,7 @@ import javax.naming.NamingEnumeration
 import javax.naming.directory.Attributes
 import javax.naming.directory.BasicAttribute
 import javax.naming.directory.BasicAttributes
+import javax.naming.directory.SearchControls
 import javax.naming.ldap.InitialLdapContext
 
 data class User(
@@ -30,16 +31,55 @@ class ActiveDirectoryClient(
         private val LOG = LoggerFactory.getLogger(ActiveDirectoryClient::class.java)
     }
 
-    suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
-        val env = Hashtable<String, String>().apply {
-            put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory")
-            put(Context.PROVIDER_URL, url)
-            put(Context.SECURITY_PRINCIPAL, username)
-            password?.let {
-                put(Context.SECURITY_CREDENTIALS, it)
-            }
+    private val env = Hashtable<String, String>().apply {
+        put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory")
+        put(Context.PROVIDER_URL, url)
+        put(Context.SECURITY_PRINCIPAL, username)
+        password?.let {
+            put(Context.SECURITY_CREDENTIALS, it)
+        }
+    }
+
+    suspend fun getUsers(idents: List<String>): List<User> = withContext(Dispatchers.IO) {
+        val root = InitialLdapContext(env, null)
+
+        val filter = (0..(idents.size - 1)).map {
+            "(cn={$it})"
+        }.joinToString("")
+
+        val filterExpr = "(&(objectClass=user)(|$filter))"
+
+        val result = root.search(
+            "OU=Users,OU=NAV,OU=BusinessUnits,$base",
+            filterExpr,
+            idents.toTypedArray(),
+            SearchControls()
+        )
+
+        val users: MutableList<User> = ArrayList()
+        while (result.hasMore()) {
+            val entry = result.next()
+
+            users.add(
+                User(
+                    ident = readAttribute(entry.attributes, "cn"),
+                    displayName = readAttribute(entry.attributes, "displayname"),
+                    firstName = readAttribute(entry.attributes, "givenname"),
+                    lastName = readAttribute(entry.attributes, "sn"),
+                    email = readEmail(entry.attributes),
+                    groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
+                )
+            )
         }
 
+        if (idents.size != users.size) {
+            LOG.warn("getUsers queried ${idents.size} idents, but only ${users.size} were found in LDAP.")
+        }
+
+        users
+    }
+
+    suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val attrs = BasicAttributes().apply {
