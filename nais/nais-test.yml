@@ -1,0 +1,46 @@
+apiVersion: "nais.io/v1alpha1"
+kind: "Application"
+metadata:
+  name: "navansatt-t"
+  namespace: "teampensjon"
+  labels:
+    team: "teampensjon"
+spec:
+  image: "{{{ image }}}"
+  port: 7000
+  replicas:
+    min: 2
+    max: 4
+  liveness:
+    path: "/internal/isalive"
+    initialDelay: 3
+    timeout: 1
+  readiness:
+    path: "/internal/isready"
+    initialDelay: 3
+    timeout: 1
+  prometheus:
+    enabled: true
+    path: "/internal/metrics"
+  ingresses:
+    - "https://navansatt-t.dev.adeo.no"
+    - "https://navansatt-t.dev.intern.nav.no"
+  azure:
+    application:
+      enabled: true
+      tenant: trygdeetaten.no
+  webproxy: true
+  env:
+    - name: "LDAP_URL"
+      value: "ldaps://ldapgw.test.local"
+    - name: "LDAP_BASE"
+      value: "dc=test,dc=local"
+    - name: "AXSYS_URL"
+      value: "https://axsys.dev.intern.nav.no"
+    - name: "OPENAM_WELL_KNOWN_URL"
+      value: "https://isso-t.adeo.no/isso/oauth2/.well-known/openid-configuration"
+  vault:
+    enabled: true
+    paths:
+      - kvPath: "serviceuser/data/test/srvssolinux"
+        mountPath: "/secrets/ldap"
