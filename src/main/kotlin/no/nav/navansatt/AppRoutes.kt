@@ -25,7 +25,8 @@ data class NavAnsattResult(
 @Serializable
 data class NAVEnhetResult(
     val id: String,
-    val navn: String
+    val navn: String,
+    val nivaa: String
 )
 
 @Serializable
@@ -36,7 +37,8 @@ data class Fagomrade(
 fun Routing.AppRoutes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
-    axsysClient: AxsysClient
+    axsysClient: AxsysClient,
+    norg2Client: Norg2Client
 ) {
     simpleGet("/ping") {
         call.respond("OK")
@@ -100,11 +102,13 @@ fun Routing.AppRoutes(
         data class GetNAVAnsattEnheterLocation(val ident: String)
         get<GetNAVAnsattEnheterLocation> { location ->
             val result = axsysClient.hentTilganger(location.ident)
+            val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
             call.respond(
-                result.enheter.map {
+                enheter.map {
                     NAVEnhetResult(
-                        id = it.enhetId,
-                        navn = it.navn
+                        id = it.enhetNr,
+                        navn = it.navn,
+                        nivaa = it.orgNivaa
                     )
                 }
             )

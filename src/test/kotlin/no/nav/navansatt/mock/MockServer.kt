@@ -16,6 +16,7 @@ class MockServer(val port: Int) {
             routing {
                 oidcMocks()
                 axsysMock()
+                norg2Mock()
             }
         }
     }

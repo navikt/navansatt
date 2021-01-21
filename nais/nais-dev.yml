@@ -37,6 +37,8 @@ spec:
       value: "dc=preprod,dc=local"
     - name: "AXSYS_URL"
       value: "https://axsys.dev.intern.nav.no"
+    - name: "NORG2_URL"
+      value: "https://norg2.dev-fss.nais.io/norg2"
     - name: "OPENAM_WELL_KNOWN_URL"
       value: "https://isso-q.adeo.no/isso/oauth2/.well-known/openid-configuration"
   vault:

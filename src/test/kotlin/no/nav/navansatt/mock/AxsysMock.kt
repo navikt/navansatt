@@ -5,6 +5,8 @@ import io.ktor.response.respond
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 import kotlinx.serialization.Serializable
+import no.nav.navansatt.AxsysEnhet
+import no.nav.navansatt.TilgangResponse
 
 fun Routing.axsysMock() {
     @Serializable
@@ -20,5 +22,9 @@ fun Routing.axsysMock() {
             )
         }
         call.respond(result)
+    }
+
+    get("/rest/axsys/api/v1/tilgang/lukesky") {
+        call.respond(TilgangResponse(enheter = listOf(AxsysEnhet(enhetId = "1234", navn = "Testenhet", fagomrader = listOf("PEN")))))
     }
 }

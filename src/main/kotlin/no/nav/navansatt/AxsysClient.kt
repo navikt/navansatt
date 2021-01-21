@@ -17,11 +17,11 @@ import org.slf4j.LoggerFactory
 
 @Serializable
 data class TilgangResponse(
-    val enheter: List<Enhet>
+    val enheter: List<AxsysEnhet>
 )
 
 @Serializable
-data class Enhet(
+data class AxsysEnhet(
     val enhetId: String,
     val navn: String,
     val fagomrader: List<String>

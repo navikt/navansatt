@@ -41,6 +41,9 @@ fun main() {
     val axsysClient = AxsysClient(
         axsysUrl = config.axsysUrl
     )
+    val norg2Client = Norg2Client(
+        norg2Url = config.norg2Url
+    )
     val metricsRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     val azureOidc = runBlocking { discoverOidcMetadata(config.azureWellKnown) }
     val openamOidc = runBlocking { discoverOidcMetadata(config.openamWellKnown) }
@@ -87,7 +90,8 @@ fun main() {
             AppRoutes(
                 metricsRegistry = metricsRegistry,
                 activeDirectoryClient = activeDirectoryClient,
-                axsysClient = axsysClient
+                axsysClient = axsysClient,
+                norg2Client = norg2Client
             )
         }
     }.start(wait = true)
