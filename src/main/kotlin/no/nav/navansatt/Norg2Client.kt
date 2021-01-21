@@ -45,9 +45,11 @@ class Norg2Client(val norg2Url: String) {
 
     suspend fun hentEnheter(nummer: List<String>): List<Norg2Enhet> {
         val response = httpClient.get<List<Norg2Enhet>> {
-            url(URLBuilder(norg2Url + "/api/v1/enhet").apply {
-                parameters.appendAll("enhetsnummerListe", nummer)
-            }.buildString())
+            url(
+                URLBuilder(norg2Url + "/api/v1/enhet").apply {
+                    parameters.appendAll("enhetsnummerListe", nummer)
+                }.buildString()
+            )
         }
         return response
     }
