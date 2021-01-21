@@ -92,7 +92,7 @@ class ActiveDirectoryClient(
         while (result.hasMore()) {
             val entry = result.next()
             return@withContext User(
-                ident = ident,
+                ident = readAttribute(entry.attributes, "cn"),
                 displayName = readAttribute(entry.attributes, "displayname"),
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
