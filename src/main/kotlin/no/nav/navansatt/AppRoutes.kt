@@ -91,27 +91,45 @@ fun Routing.AppRoutes(
         @Location("/navansatt/{ident}/fagomrader")
         data class GetNAVAnsattFagomraderLocation(val ident: String)
         get<GetNAVAnsattFagomraderLocation> { location ->
-            val result = axsysClient.hentTilganger(location.ident)
-            val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
-                Fagomrade(kode = it)
+            try {
+                val result = axsysClient.hentTilganger(location.ident)
+                val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
+                    Fagomrade(kode = it)
+                }
+                call.respond(response)
+            } catch (error: NAVAnsattNotFoundError) {
+                call.response.status(HttpStatusCode.NotFound)
+                call.respond(
+                    ApiError(
+                        message = "Fant ikke NAV-ansatt med id ${location.ident}"
+                    )
+                )
             }
-            call.respond(response)
         }
 
         @Location("/navansatt/{ident}/enheter")
         data class GetNAVAnsattEnheterLocation(val ident: String)
         get<GetNAVAnsattEnheterLocation> { location ->
-            val result = axsysClient.hentTilganger(location.ident)
-            val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
-            call.respond(
-                enheter.map {
-                    NAVEnhetResult(
-                        id = it.enhetNr,
-                        navn = it.navn,
-                        nivaa = it.orgNivaa
+            try {
+                val result = axsysClient.hentTilganger(location.ident)
+                val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
+                call.respond(
+                    enheter.map {
+                        NAVEnhetResult(
+                            id = it.enhetNr,
+                            navn = it.navn,
+                            nivaa = it.orgNivaa
+                        )
+                    }
+                )
+            } catch (error: NAVAnsattNotFoundError) {
+                call.response.status(HttpStatusCode.NotFound)
+                call.respond(
+                    ApiError(
+                        message = "Fant ikke NAV-ansatt med id ${location.ident}"
                     )
-                }
-            )
+                )
+            }
         }
 
         @Location("/enhet/{enhetId}/navansatte")

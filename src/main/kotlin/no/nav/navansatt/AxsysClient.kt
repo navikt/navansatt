@@ -33,6 +33,7 @@ data class Ident(
 )
 
 class EnhetNotFoundError(message: String) : Exception(message)
+class NAVAnsattNotFoundError(message: String) : Exception(message)
 
 class AxsysClient(val axsysUrl: String) {
     companion object {
@@ -64,10 +65,19 @@ class AxsysClient(val axsysUrl: String) {
     }
 
     suspend fun hentTilganger(ident: String): TilgangResponse {
-        val response = httpClient.get<TilgangResponse> {
-            url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
+        try {
+            val response = httpClient.get<TilgangResponse> {
+                url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
+            }
+            return response
+        } catch (e: ClientRequestException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
+            } else {
+                LOG.error("Kunne ikke hente tilganger for NAV-ansatt $ident", e)
+                throw e
+            }
         }
-        return response
     }
 
     suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
