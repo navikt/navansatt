@@ -6,8 +6,13 @@ import io.ktor.routing.routing
 import io.ktor.serialization.json
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import org.slf4j.LoggerFactory
 
 class MockServer(val port: Int) {
+    companion object {
+        val LOG = LoggerFactory.getLogger(MockServer::class.java)
+    }
+
     val server = run {
         embeddedServer(Netty, port = port) {
             install(ContentNegotiation) {
@@ -22,7 +27,7 @@ class MockServer(val port: Int) {
     }
 
     fun listen() {
-        println("Starting Mock server on port $port")
+        LOG.info("Starting Mock server on port $port")
         server.start(wait = true)
     }
 }

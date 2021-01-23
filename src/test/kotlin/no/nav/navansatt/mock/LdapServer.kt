@@ -7,6 +7,7 @@ import com.unboundid.ldap.sdk.Entry
 import com.unboundid.ldif.LDIFAddChangeRecord
 import com.unboundid.ldif.LDIFChangeRecord
 import com.unboundid.ldif.LDIFReader
+import org.slf4j.LoggerFactory
 import kotlin.concurrent.thread
 
 val setup = """
@@ -44,6 +45,9 @@ objectClass: top
 """.trimIndent()
 
 class LdapServer(val port: Int) {
+    companion object {
+        val LOG = LoggerFactory.getLogger(LdapServer::class.java)
+    }
     private val directoryServer = run {
         val cfg = InMemoryDirectoryServerConfig("DC=local")
         cfg.setEnforceAttributeSyntaxCompliance(false)
@@ -81,7 +85,7 @@ class LdapServer(val port: Int) {
     }
 
     fun listen() {
-        println("Starting LDAP server on $port")
+        LOG.info("Starting LDAP server on $port")
         directoryServer.startListening()
     }
 }
