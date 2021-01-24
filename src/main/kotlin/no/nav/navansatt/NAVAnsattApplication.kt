@@ -13,6 +13,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
+import io.ktor.request.header
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.serialization.json
@@ -64,8 +65,22 @@ fun main() {
             }
 
             status(HttpStatusCode.Unauthorized) {
-                log.warn("Denied unauthorized access.")
-                call.respond(ApiError(message = "Access Denied"))
+                val authorization = call.request.header("Authorization")
+                if (authorization != null) {
+                    if (authorization.toLowerCase().startsWith("Bearer ")) {
+                        val message = "Access Denied: with 'Bearer xxxxxx...' authentication. Expected valid JWT token."
+                        log.warn(message)
+                        call.respond(ApiError(message = message))
+                    } else if (authorization.toLowerCase().startsWith("Basic ")) {
+                        val message = "Access Denied: Basic authentication is not supposed. Please use JWT authentication."
+                        log.warn(message)
+                        call.respond(ApiError(message = message))
+                    }
+                } else {
+                    val message = "Access Denied: no Authorization header was found in the request."
+                    log.warn(message)
+                    call.respond(ApiError(message = message))
+                }
             }
         }
         install(Authentication) {
