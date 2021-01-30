@@ -117,7 +117,9 @@
 
     <build>
         <sourceDirectory>src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>src/test/kotlin</testSourceDirectory>
         <plugins>
+            <!--
             <plugin>
                 <groupId>com.github.gantsign.maven</groupId>
                 <artifactId>ktlint-maven-plugin</artifactId>
@@ -128,14 +130,11 @@
                         <goals>
                             <goal>check</goal>
                         </goals>
-                        <!--
-                         Unable to get plugin to exclude generated sources (using sourcesExcludes),
-                         binding to a phase before sources are generated
-                        -->
                         <phase>validate</phase>
                     </execution>
                 </executions>
             </plugin>
+-->
             <plugin>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-maven-plugin</artifactId>
