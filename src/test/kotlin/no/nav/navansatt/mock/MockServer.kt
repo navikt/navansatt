@@ -8,6 +8,8 @@ import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import org.slf4j.LoggerFactory
 
+val test = io.ktor.client.engine.mock.MockEngine
+
 class MockServer(val port: Int) {
     companion object {
         val LOG = LoggerFactory.getLogger(MockServer::class.java)
