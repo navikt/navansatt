@@ -2,6 +2,7 @@ package no.nav.navansatt
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import java.util.Hashtable
 import java.util.regex.Pattern
@@ -116,10 +117,17 @@ class ActiveDirectoryClient(
     }
 
     private fun readAttribute(attrs: Attributes, key: String): String {
-        return attrs[key]?.get()?.toString() ?: run {
+        val result = attrs[key]?.get()?.toString() ?: run {
             LOG.warn("LDAP object has no attribute \"$key\", defaulting to empty string.")
             return ""
         }
+
+        val unescaped = StringEscapeUtils.unescapeJava(result)
+        if (unescaped != result) {
+            LOG.warn("LDAP returned a strange result, original=$result, unescaped=$unescaped. Returning original.")
+        }
+
+        return result
     }
 
     private fun readEmail(attrs: Attributes): String {
