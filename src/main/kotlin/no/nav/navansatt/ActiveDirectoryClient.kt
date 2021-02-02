@@ -74,6 +74,15 @@ class ActiveDirectoryClient(
 
         if (idents.size != users.size) {
             LOG.warn("getUsers queried ${idents.size} idents, but only ${users.size} were found in LDAP.")
+
+            val requestedItentsSet = idents.toSet()
+            val returnedIdents = users.map { it.ident }.toSet()
+            val missing = requestedItentsSet.minus(returnedIdents)
+
+            // Don't log the full list, if very many idents are missing. (Prevent log spamming)
+            if (missing.size < 50) {
+                LOG.warn("Idents missing in LDAP: [${missing.joinToString(", ")}]")
+            }
         }
 
         users
