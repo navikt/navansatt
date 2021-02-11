@@ -19,6 +19,11 @@ spec:
     path: "/internal/isready"
     initialDelay: 3
     timeout: 1
+  resources:
+    limits:
+      memory: "1024Mi"
+    requests:
+      memory: "512Mi"
   prometheus:
     enabled: true
     path: "/internal/metrics"

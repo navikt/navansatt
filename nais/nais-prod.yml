@@ -22,6 +22,11 @@ spec:
     path: "/internal/isready"
     initialDelay: 3
     timeout: 1
+  resources:
+    limits:
+      memory: "1024Mi"
+    requests:
+      memory: "512Mi"
   ingresses:
     - "https://navansatt.intern.nav.no"
   azure:
