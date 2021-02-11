@@ -101,8 +101,15 @@ class ActiveDirectoryClient(
 
         while (result.hasMore()) {
             val entry = result.next()
+
+            val returnedIdent = readAttribute(entry.attributes, "cn")
+
+            if (ident.toLowerCase() != returnedIdent.toLowerCase()) {
+                LOG.warn("Mismatch in ident: Asked for ident $ident but a user with CN $returnedIdent was found.")
+            }
+
             return@withContext User(
-                ident = readAttribute(entry.attributes, "cn"),
+                ident = returnedIdent,
                 displayName = readAttribute(entry.attributes, "displayname"),
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
