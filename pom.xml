@@ -11,7 +11,7 @@
 
     <properties>
         <kotlin.version>1.4.21</kotlin.version>
-        <ktor.version>1.4.3</ktor.version>
+        <ktor.version>1.5.1</ktor.version>
         <serialization.version>1.0.1</serialization.version>
     </properties>
 
