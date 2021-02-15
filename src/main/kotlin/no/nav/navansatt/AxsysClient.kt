@@ -2,7 +2,7 @@ package no.nav.navansatt
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.features.ResponseException
 import io.ktor.client.features.cache.HttpCache
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
@@ -70,7 +70,7 @@ class AxsysClient(val axsysUrl: String) {
                 url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
             }
             return response
-        } catch (e: ClientRequestException) {
+        } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
             } else {
@@ -86,7 +86,7 @@ class AxsysClient(val axsysUrl: String) {
                 url(axsysUrl + "/api/v1/enhet/$enhetId/brukere")
             }
             return response
-        } catch (e: ClientRequestException) {
+        } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw EnhetNotFoundError("Fant ikke NAV-enhet med id $enhetId")
             } else {
