@@ -34,7 +34,7 @@ data class Fagomrade(
     val kode: String
 )
 
-fun Routing.AppRoutes(
+fun Routing.Routes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,

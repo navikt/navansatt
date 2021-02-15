@@ -102,7 +102,7 @@ fun main() {
         }
 
         routing {
-            AppRoutes(
+            Routes(
                 metricsRegistry = metricsRegistry,
                 activeDirectoryClient = activeDirectoryClient,
                 axsysClient = axsysClient,

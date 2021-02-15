@@ -188,7 +188,7 @@
                         <configuration>
                             <archive>
                                 <manifest>
-                                    <mainClass>no.nav.navansatt.NAVAnsattApplicationKt</mainClass>
+                                    <mainClass>no.nav.navansatt.MainKt</mainClass>
                                 </manifest>
                             </archive>
                             <descriptorRefs>
