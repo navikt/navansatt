@@ -29,7 +29,7 @@ object Users {
         )
     )
 
-    val klageb =     LdapUser(
+    val klageb = LdapUser(
         cn = "klageb",
         samaccountname = "klageb",
         givenname = "Klara",

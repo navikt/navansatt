@@ -8,7 +8,6 @@ import com.unboundid.ldif.LDIFAddChangeRecord
 import com.unboundid.ldif.LDIFChangeRecord
 import com.unboundid.ldif.LDIFReader
 import org.slf4j.LoggerFactory
-import kotlin.concurrent.thread
 
 val setup = """
 dn: dc=local

@@ -23,13 +23,15 @@ fun Routing.norg2Mock() {
                 "Missing ?enhetsnummerListe in query parameters"
             }
         } else {
-            call.respond(enheter.map {
-                EnhetDTO(
-                    enhetNr = it,
-                    navn = "Enhet med navn $it",
-                    orgNivaa = "EN"
-                )
-            })
+            call.respond(
+                enheter.map {
+                    EnhetDTO(
+                        enhetNr = it,
+                        navn = "Enhet med navn $it",
+                        orgNivaa = "EN"
+                    )
+                }
+            )
         }
     }
 }

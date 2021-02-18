@@ -2,14 +2,14 @@ package no.nav.navansatt.mock
 
 import io.ktor.application.call
 import io.ktor.http.ContentType
-import io.ktor.response.respond
 import io.ktor.response.respondText
 import io.ktor.routing.Routing
 import io.ktor.routing.get
 
 fun Routing.oidcMocks() {
     get("/rest/AzureAd/123456/v2.0/.well-known/openid-configuration") {
-        call.respondText("""
+        call.respondText(
+            """
                         {
                           "frontendUrl": "http://localhost:8060/#",
                           "baseUrl": "http://localhost:8060/rest/AzureAd",
@@ -80,11 +80,14 @@ fun Routing.oidcMocks() {
                           "jwks_uri": "http://localhost:8060/rest/AzureAd/123456/discovery/v2.0/keys",
                           "token_endpoint": "http://localhost:8060/rest/AzureAd/123456/oauth2/v2.0/token"
                         }
-                    """.trimIndent(), ContentType.parse("application/json"))
+            """.trimIndent(),
+            ContentType.parse("application/json")
+        )
     }
 
     get("/rest/AzureAd/123456/discovery/v2.0/keys") {
-        call.respondText("""
+        call.respondText(
+            """
                         {
                             "keys": [
                                     {
@@ -97,11 +100,14 @@ fun Routing.oidcMocks() {
                                     }
                             ]
                         }
-                    """.trimIndent(), ContentType.parse("application/json"))
+            """.trimIndent(),
+            ContentType.parse("application/json")
+        )
     }
 
     get("/rest/isso/oauth2/.well-known/openid-configuration") {
-        call.respondText("""
+        call.respondText(
+            """
                         {
                           "issuer": "vtp-pensjon-issuer",
                           "response_types_supported": [
@@ -150,7 +156,9 @@ fun Routing.oidcMocks() {
                           ],
                           "token_endpoint": "http://localhost:8060/rest/isso/oauth2/access_token"
                         }
-                    """.trimIndent(), ContentType.parse("application/json"))
+            """.trimIndent(),
+            ContentType.parse("application/json")
+        )
     }
 
     get("/rest/isso/oauth2/connect/jwk_uri") {
@@ -168,7 +176,8 @@ fun Routing.oidcMocks() {
                                         }
                                 ]
                             }
-                        """.trimIndent(), ContentType.parse("application/json")
+            """.trimIndent(),
+            ContentType.parse("application/json")
         )
     }
 }
