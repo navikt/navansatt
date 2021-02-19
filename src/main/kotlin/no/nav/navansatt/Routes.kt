@@ -4,6 +4,7 @@ import io.ktor.application.call
 import io.ktor.auth.authenticate
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
@@ -35,6 +36,7 @@ data class Fagomrade(
     val kode: String
 )
 
+@KtorExperimentalLocationsAPI
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,

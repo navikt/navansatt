@@ -5,7 +5,6 @@ import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.cache.HttpCache
 import io.ktor.client.features.json.JsonFeature
 import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.locations.KtorExperimentalLocationsAPI
 import io.ktor.server.engine.embeddedServer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -16,7 +15,6 @@ data class ApiError(
     val message: String
 )
 
-@KtorExperimentalLocationsAPI
 fun main() {
     val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
     val activeDirectoryClient = ActiveDirectoryClient(

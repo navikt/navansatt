@@ -6,10 +6,10 @@ import kotlin.concurrent.thread
 val LOG = LoggerFactory.getLogger("no.nav.navansatt.mock.MockMain")
 fun main() {
     LOG.info("Running mock backends")
-    val ldapServer = thread {
+    thread {
         LdapServer(8390).listen()
     }
-    val mockServer = thread {
+    thread {
         MockServer(8066).listen()
     }
 }
