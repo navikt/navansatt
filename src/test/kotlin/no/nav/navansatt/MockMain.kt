@@ -7,9 +7,9 @@ val LOG = LoggerFactory.getLogger("no.nav.navansatt.mock.MockMain")
 fun main() {
     LOG.info("Running mock backends")
     val ldapServer = thread {
-        LdapServer(8389).listen()
+        LdapServer(8390).listen()
     }
     val mockServer = thread {
-        MockServer(8060).listen()
+        MockServer(8066).listen()
     }
 }

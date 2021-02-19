@@ -1,18 +1,13 @@
 package no.nav.navansatt
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
 import io.ktor.client.features.ResponseException
-import io.ktor.client.features.cache.HttpCache
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
-import io.ktor.client.request.HttpRequestPipeline
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
 import io.ktor.http.HttpStatusCode
 import kotlinx.serialization.Serializable
-import org.apache.http.ssl.SSLContexts
 import org.slf4j.LoggerFactory
 
 @Serializable
@@ -35,41 +30,23 @@ data class Ident(
 class EnhetNotFoundError(message: String) : Exception(message)
 class NAVAnsattNotFoundError(message: String) : Exception(message)
 
-class AxsysClient(val axsysUrl: String) {
+fun HttpRequestBuilder.axsysHeaders() {
+    header("Nav-Call-Id", "ignore")
+    header("Nav-Consumer-Id", "navansatt")
+    header("Accept", "application/json")
+}
+
+class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     companion object {
         private val LOG = LoggerFactory.getLogger(AxsysClient::class.java)
     }
 
-    val httpClient = HttpClient(Apache) {
-        engine {
-            sslContext = SSLContexts.createSystemDefault()
-            connectTimeout = 2
-            customizeClient {
-                useSystemProperties()
-            }
-        }
-        install(HttpCache)
-        install(JsonFeature) {
-            serializer = KotlinxSerializer(
-                kotlinx.serialization.json.Json {
-                    ignoreUnknownKeys = true
-                }
-            )
-        }
-    }.also {
-        it.requestPipeline.intercept(HttpRequestPipeline.State) {
-            context.header("Nav-Call-Id", "ignore")
-            context.header("Nav-Consumer-Id", "navansatt")
-            context.header("Accept", "application/json")
-        }
-    }
-
     suspend fun hentTilganger(ident: String): TilgangResponse {
         try {
-            val response = httpClient.get<TilgangResponse> {
+            return httpClient.get {
                 url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
+                axsysHeaders()
             }
-            return response
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
@@ -82,10 +59,10 @@ class AxsysClient(val axsysUrl: String) {
 
     suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
         try {
-            val response = httpClient.get<List<Ident>> {
+            return httpClient.get {
                 url(axsysUrl + "/api/v1/enhet/$enhetId/brukere")
+                axsysHeaders()
             }
-            return response
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw EnhetNotFoundError("Fant ikke NAV-enhet med id $enhetId")

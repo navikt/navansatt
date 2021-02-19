@@ -14,9 +14,9 @@ data class ApplicationConfig(
     val norg2Url: String
 )
 
-val vtp = "http://localhost:8060"
+val vtp = "http://localhost:8066"
 fun appConfigLocal() = ApplicationConfig(
-    adUrl = "ldap://localhost:8389",
+    adUrl = "ldap://localhost:8390",
     adBase = "DC=test,DC=local",
     adUsername = "",
     adPassword = "",

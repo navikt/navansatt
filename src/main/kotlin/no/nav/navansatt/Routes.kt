@@ -8,6 +8,7 @@ import io.ktor.locations.Location
 import io.ktor.locations.get
 import io.ktor.response.respond
 import io.ktor.response.respondText
+import io.ktor.routing.Route
 import io.ktor.routing.Routing
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
@@ -33,6 +34,112 @@ data class NAVEnhetResult(
 data class Fagomrade(
     val kode: String
 )
+
+fun Route.authenticatedRoutes(
+    activeDirectoryClient: ActiveDirectoryClient,
+    axsysClient: AxsysClient,
+    norg2Client: Norg2Client
+) {
+    simpleGet("/ping-authenticated") {
+        call.respond("OK")
+    }
+
+    @Location("/navansatt/{ident}")
+    data class GetNAVAnsattLocation(val ident: String)
+    get<GetNAVAnsattLocation> { location ->
+        val result = activeDirectoryClient.getUser(location.ident)
+        result?.let {
+            call.respond(
+                NavAnsattResult(
+                    ident = location.ident,
+                    navn = it.displayName,
+                    fornavn = it.firstName,
+                    etternavn = it.lastName,
+                    epost = it.email
+                )
+            )
+        } ?: run {
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "User not found"
+                )
+            )
+        }
+    }
+
+    @Location("/navansatt/{ident}/fagomrader")
+    data class GetNAVAnsattFagomraderLocation(val ident: String)
+    get<GetNAVAnsattFagomraderLocation> { location ->
+        try {
+            val result = axsysClient.hentTilganger(location.ident)
+            val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
+                Fagomrade(kode = it)
+            }
+            call.respond(response)
+        } catch (error: NAVAnsattNotFoundError) {
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke NAV-ansatt med id ${location.ident}"
+                )
+            )
+        }
+    }
+
+    @Location("/navansatt/{ident}/enheter")
+    data class GetNAVAnsattEnheterLocation(val ident: String)
+    get<GetNAVAnsattEnheterLocation> { location ->
+        try {
+            val result = axsysClient.hentTilganger(location.ident)
+            val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
+            call.respond(
+                enheter.map {
+                    NAVEnhetResult(
+                        id = it.enhetNr,
+                        navn = it.navn,
+                        nivaa = it.orgNivaa
+                    )
+                }
+            )
+        } catch (error: NAVAnsattNotFoundError) {
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke NAV-ansatt med id ${location.ident}"
+                )
+            )
+        }
+    }
+
+    @Location("/enhet/{enhetId}/navansatte")
+    data class GetEnhetAnsatte(val enhetId: String)
+    get<GetEnhetAnsatte> { location ->
+        try {
+            val result = axsysClient.hentAnsattIdenter(location.enhetId)
+
+            val allUsers = activeDirectoryClient.getUsers(result.map { it.appIdent })
+
+            val navAnsattData: List<NavAnsattResult> = allUsers.map {
+                NavAnsattResult(
+                    ident = it.ident,
+                    navn = it.displayName,
+                    fornavn = it.firstName,
+                    etternavn = it.lastName,
+                    epost = it.email
+                )
+            }
+            call.respond(navAnsattData)
+        } catch (err: EnhetNotFoundError) {
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke NAV-enhet med id ${location.enhetId}"
+                )
+            )
+        }
+    }
+}
 
 fun Routing.Routes(
     metricsRegistry: PrometheusMeterRegistry,
@@ -60,104 +167,10 @@ fun Routing.Routes(
     }
 
     authenticate("azure", "openam") {
-        simpleGet("/ping-authenticated") {
-            call.respond("OK")
-        }
-
-        @Location("/navansatt/{ident}")
-        data class GetNAVAnsattLocation(val ident: String)
-        get<GetNAVAnsattLocation> { location ->
-            val result = activeDirectoryClient.getUser(location.ident)
-            result?.let {
-                call.respond(
-                    NavAnsattResult(
-                        ident = location.ident,
-                        navn = it.displayName,
-                        fornavn = it.firstName,
-                        etternavn = it.lastName,
-                        epost = it.email
-                    )
-                )
-            } ?: run {
-                call.response.status(HttpStatusCode.NotFound)
-                call.respond(
-                    ApiError(
-                        message = "User not found"
-                    )
-                )
-            }
-        }
-
-        @Location("/navansatt/{ident}/fagomrader")
-        data class GetNAVAnsattFagomraderLocation(val ident: String)
-        get<GetNAVAnsattFagomraderLocation> { location ->
-            try {
-                val result = axsysClient.hentTilganger(location.ident)
-                val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
-                    Fagomrade(kode = it)
-                }
-                call.respond(response)
-            } catch (error: NAVAnsattNotFoundError) {
-                call.response.status(HttpStatusCode.NotFound)
-                call.respond(
-                    ApiError(
-                        message = "Fant ikke NAV-ansatt med id ${location.ident}"
-                    )
-                )
-            }
-        }
-
-        @Location("/navansatt/{ident}/enheter")
-        data class GetNAVAnsattEnheterLocation(val ident: String)
-        get<GetNAVAnsattEnheterLocation> { location ->
-            try {
-                val result = axsysClient.hentTilganger(location.ident)
-                val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
-                call.respond(
-                    enheter.map {
-                        NAVEnhetResult(
-                            id = it.enhetNr,
-                            navn = it.navn,
-                            nivaa = it.orgNivaa
-                        )
-                    }
-                )
-            } catch (error: NAVAnsattNotFoundError) {
-                call.response.status(HttpStatusCode.NotFound)
-                call.respond(
-                    ApiError(
-                        message = "Fant ikke NAV-ansatt med id ${location.ident}"
-                    )
-                )
-            }
-        }
-
-        @Location("/enhet/{enhetId}/navansatte")
-        data class GetEnhetAnsatte(val enhetId: String)
-        get<GetEnhetAnsatte> { location ->
-            try {
-                val result = axsysClient.hentAnsattIdenter(location.enhetId)
-
-                val allUsers = activeDirectoryClient.getUsers(result.map { it.appIdent })
-
-                val navAnsattData: List<NavAnsattResult> = allUsers.map {
-                    NavAnsattResult(
-                        ident = it.ident,
-                        navn = it.displayName,
-                        fornavn = it.firstName,
-                        etternavn = it.lastName,
-                        epost = it.email
-                    )
-                }
-                call.respond(navAnsattData)
-            } catch (err: EnhetNotFoundError) {
-                call.response.status(HttpStatusCode.NotFound)
-                call.respond(
-                    ApiError(
-                        message = "Fant ikke NAV-enhet med id ${location.enhetId}"
-                    )
-                )
-            }
-        }
+        authenticatedRoutes(
+            activeDirectoryClient = activeDirectoryClient,
+            axsysClient = axsysClient,
+            norg2Client = norg2Client
+        )
     }
 }
