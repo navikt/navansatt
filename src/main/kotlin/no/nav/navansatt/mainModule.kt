@@ -43,6 +43,9 @@ fun Application.mainModule(
     val openamOidc = runBlocking {
         discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.openamWellKnown)
     }
+    val stsOidc = runBlocking {
+        discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.stsWellKnown)
+    }
 
     val metricsRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     install(MicrometerMetrics) {
@@ -99,6 +102,14 @@ fun Application.mainModule(
             verifier(
                 UrlJwkProvider(URL(openamOidc.jwks_uri)),
                 openamOidc.issuer
+            )
+            validate { credential -> JWTPrincipal(credential.payload) }
+        }
+
+        jwt("sts") {
+            verifier(
+                UrlJwkProvider(URL(stsOidc.jwks_uri)),
+                stsOidc.issuer
             )
             validate { credential -> JWTPrincipal(credential.payload) }
         }

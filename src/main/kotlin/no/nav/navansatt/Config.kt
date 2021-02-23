@@ -10,6 +10,7 @@ data class ApplicationConfig(
     val adPassword: String,
     val azureWellKnown: String,
     val openamWellKnown: String,
+    val stsWellKnown: String,
     val axsysUrl: String,
     val norg2Url: String
 )
@@ -22,6 +23,7 @@ fun appConfigLocal() = ApplicationConfig(
     adPassword = "",
     azureWellKnown = "$vtp/rest/AzureAd/123456/v2.0/.well-known/openid-configuration",
     openamWellKnown = "$vtp/rest/isso/oauth2/.well-known/openid-configuration",
+    stsWellKnown = "$vtp/rest/v1/sts/.well-known/openid-configuration",
     axsysUrl = "$vtp/rest/axsys",
     norg2Url = "$vtp/rest/norg2"
 )
@@ -36,6 +38,7 @@ fun appConfigNais() = ApplicationConfig(
     adPassword = File("/secrets/ldap/password").readText(),
     azureWellKnown = readEnv("AZURE_APP_WELL_KNOWN_URL"),
     openamWellKnown = readEnv("OPENAM_WELL_KNOWN_URL"),
+    stsWellKnown = readEnv("STS_WELL_KNOWN_URL"),
     axsysUrl = readEnv("AXSYS_URL"),
     norg2Url = readEnv("NORG2_URL")
 )

@@ -168,7 +168,7 @@ fun Routing.Routes(
         )
     }
 
-    authenticate("azure", "openam") {
+    authenticate("azure", "openam", "sts") {
         authenticatedRoutes(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = axsysClient,

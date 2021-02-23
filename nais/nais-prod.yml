@@ -45,6 +45,8 @@ spec:
       value: "https://norg2.nais.adeo.no/norg2"
     - name: "OPENAM_WELL_KNOWN_URL"
       value: "https://isso.adeo.no/isso/oauth2/.well-known/openid-configuration"
+    - name: "STS_WELL_KNOWN_URL"
+      value: "https://security-token-service.nais.adeo.no/.well-known/openid-configuration"
   vault:
     enabled: true
     paths:
