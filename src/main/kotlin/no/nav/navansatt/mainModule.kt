@@ -76,8 +76,12 @@ fun Application.mainModule(
                     call.response.status(HttpStatusCode.Unauthorized)
                     call.respond(ApiError(message = message))
                 } else {
-                    val message = "Access Denied: Invalid Authentication header."
-                    log.warn(message)
+                    // Debug logging ONLY FOR DEV ENVIRONMENT
+                    val message = if (System.getenv("NAIS_CLUSTER_NAME") == "dev-fss") {
+                        "Access Denied: Invalid Authentication header: $authorization"
+                    } else {
+                        "Access Denied: Invalid Authentication header"
+                    }
                     call.response.status(HttpStatusCode.Unauthorized)
                     call.respond(ApiError(message = message))
                 }
