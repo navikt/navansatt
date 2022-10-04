@@ -30,6 +30,19 @@ spec:
   ingresses:
     - "https://navansatt.dev.adeo.no"
     - "https://navansatt.dev.intern.nav.no"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: pensjon-pen-q0
+          namespace: teampensjon
+        - application: pensjon-pen-q1
+          namespace: teampensjon
+        - application: pensjon-pen-q2
+          namespace: teampensjon
+        - application: pensjon-pen-q4
+          namespace: teampensjon
+        - application: pensjon-pen-q5
+          namespace: teampensjon
   azure:
     application:
       enabled: true

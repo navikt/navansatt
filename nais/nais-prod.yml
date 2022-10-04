@@ -29,6 +29,11 @@ spec:
       memory: "512Mi"
   ingresses:
     - "https://navansatt.intern.nav.no"
+  accessPolicy:
+    inbound:
+      rules:
+        - application: pensjon-pen
+          namespace: pensjondeployer
   azure:
     application:
       enabled: true
