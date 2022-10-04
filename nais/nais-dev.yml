@@ -43,6 +43,16 @@ spec:
           namespace: teampensjon
         - application: pensjon-pen-q5
           namespace: teampensjon
+        - application: pensjon-psak-q0
+          namespace: teampensjon
+        - application: pensjon-psak-q1
+          namespace: teampensjon
+        - application: pensjon-psak-q2
+          namespace: teampensjon
+        - application: pensjon-psak-q4
+          namespace: teampensjon
+        - application: pensjon-psak-q5
+          namespace: teampensjon
   azure:
     application:
       enabled: true

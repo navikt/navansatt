@@ -34,6 +34,8 @@ spec:
       rules:
         - application: pensjon-pen
           namespace: pensjondeployer
+        - application: pensjon-psak
+          namespace: pensjondeployer
   azure:
     application:
       enabled: true
