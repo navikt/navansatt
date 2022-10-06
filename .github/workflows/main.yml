@@ -40,13 +40,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: nais/deploy/actions/deploy@v1
-        name: Test deploy
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_DEV }}
-          CLUSTER: dev-fss
-          RESOURCE: nais/nais-test.yml
-          VAR: image=${{ env.docker_image }}
-      - uses: nais/deploy/actions/deploy@v1
         name: Dev deploy
         env:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_DEV }}
