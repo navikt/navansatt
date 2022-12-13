@@ -36,6 +36,8 @@ spec:
           namespace: pensjondeployer
         - application: pensjon-psak
           namespace: pensjondeployer
+        - application: pensjon-pselv
+          namespace: pensjondeployer
   azure:
     application:
       enabled: true
