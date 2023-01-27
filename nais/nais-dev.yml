@@ -53,6 +53,8 @@ spec:
           namespace: teampensjon
         - application: pensjon-psak-q5
           namespace: teampensjon
+        - application: etterlatte-proxy
+          namespace: etterlatte
   azure:
     application:
       enabled: true
