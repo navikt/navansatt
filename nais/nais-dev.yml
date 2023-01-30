@@ -54,7 +54,7 @@ spec:
           namespace: teampensjon
         - application: pensjon-psak-q5
           namespace: teampensjon
-        - application: etterlatte-proxy
+        - application: etterlatte-brev-api
           namespace: etterlatte
   azure:
     application:
