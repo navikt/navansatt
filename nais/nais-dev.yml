@@ -60,6 +60,7 @@ spec:
     application:
       enabled: true
       tenant: trygdeetaten.no
+      allowAllUsers: true
   webproxy: true
   env:
     - name: "LDAP_URL"
