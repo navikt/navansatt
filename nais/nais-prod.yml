@@ -36,6 +36,8 @@ spec:
           namespace: pensjondeployer
         - application: pensjon-psak
           namespace: pensjondeployer
+        - application: etterlatte-brev-api
+          namespace: etterlatte
   azure:
     application:
       enabled: true
