@@ -44,8 +44,6 @@ spec:
       value: "https://axsys.dev.intern.nav.no"
     - name: "NORG2_URL"
       value: "https://norg2-t1.nais.preprod.local/norg2"
-    - name: "OPENAM_WELL_KNOWN_URL"
-      value: "https://isso-t.adeo.no/isso/oauth2/.well-known/openid-configuration"
     - name: "STS_WELL_KNOWN_URL"
       value: "https://security-token-service-t4.nais.preprod.local/.well-known/openid-configuration"
   vault:
