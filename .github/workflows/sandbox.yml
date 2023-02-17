@@ -3,7 +3,7 @@ name: Build, push, and deploy
 on:
   push:
     branches:
-      - main
+      - sandbox
 
 env:
   docker_image: docker.pkg.github.com/${{ github.repository }}/navansatt:${{ github.sha }}
@@ -48,11 +48,4 @@ jobs:
           APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_DEV }}
           CLUSTER: dev-fss
           RESOURCE: nais/nais-dev.yml
-          VAR: image=${{ env.docker_image }}
-      - uses: nais/deploy/actions/deploy@v1
-        name: Prod deploy
-        env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_PROD }}
-          CLUSTER: prod-fss
-          RESOURCE: nais/nais-prod.yml
           VAR: image=${{ env.docker_image }}
