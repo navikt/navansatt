@@ -40,9 +40,6 @@ fun Application.mainModule(
     val azureOidc = runBlocking {
         discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.azureWellKnown)
     }
-    val openamOidc = runBlocking {
-        discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.openamWellKnown)
-    }
     val stsOidc = runBlocking {
         discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.stsWellKnown)
     }
@@ -94,14 +91,6 @@ fun Application.mainModule(
             verifier(
                 UrlJwkProvider(URL(azureOidc.jwks_uri)),
                 azureOidc.issuer
-            )
-            validate { credential -> JWTPrincipal(credential.payload) }
-        }
-
-        jwt("openam") {
-            verifier(
-                UrlJwkProvider(URL(openamOidc.jwks_uri)),
-                openamOidc.issuer
             )
             validate { credential -> JWTPrincipal(credential.payload) }
         }
