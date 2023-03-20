@@ -56,6 +56,8 @@ spec:
           namespace: teampensjon
         - application: etterlatte-brev-api
           namespace: etterlatte
+        - application: etterlatte-behandling
+          namespace: etterlatte
   azure:
     application:
       enabled: true
