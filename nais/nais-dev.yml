@@ -56,8 +56,10 @@ spec:
           namespace: teampensjon
         - application: etterlatte-brev-api
           namespace: etterlatte
+          cluster: dev-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
