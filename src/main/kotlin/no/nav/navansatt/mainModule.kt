@@ -62,12 +62,12 @@ fun Application.mainModule(
         status(HttpStatusCode.Unauthorized) {
             val authorization = call.request.header("Authorization")
             if (authorization != null) {
-                if (authorization.toLowerCase().startsWith("Bearer ")) {
+                if (authorization.toLowerCase().startsWith("bearer ")) {
                     val message = "Access Denied: with 'Bearer xxxxxx...' authentication. Expected valid JWT token."
                     log.warn(message)
                     call.response.status(HttpStatusCode.Unauthorized)
                     call.respond(ApiError(message = message))
-                } else if (authorization.toLowerCase().startsWith("Basic ")) {
+                } else if (authorization.toLowerCase().startsWith("basic ")) {
                     val message = "Access Denied: Basic authentication is not supposed. Please use JWT authentication."
                     log.warn(message)
                     call.response.status(HttpStatusCode.Unauthorized)
