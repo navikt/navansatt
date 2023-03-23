@@ -29,6 +29,7 @@ spec:
       memory: "512Mi"
   ingresses:
     - "https://navansatt.intern.nav.no"
+    - "https://navansatt.prod-fss-pub.nais.io"
   accessPolicy:
     inbound:
       rules:
