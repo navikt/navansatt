@@ -91,7 +91,9 @@ fun Application.mainModule(
             verifier(
                 UrlJwkProvider(URL(azureOidc.jwks_uri)),
                 azureOidc.issuer
-            )
+            ) {
+                config.azureClientId?.also { withAudience(it) }
+            }
             validate { credential -> JWTPrincipal(credential.payload) }
         }
 
