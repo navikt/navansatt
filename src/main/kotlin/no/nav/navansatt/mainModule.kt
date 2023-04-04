@@ -9,19 +9,20 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.client.HttpClient
-import io.ktor.features.ContentNegotiation
-import io.ktor.features.StatusPages
-import io.ktor.http.HttpStatusCode
+import io.ktor.features.*
+import io.ktor.http.*
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.header
+import io.ktor.request.*
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.serialization.json
 import io.micrometer.prometheus.PrometheusConfig
 import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
+import org.slf4j.event.Level
 import java.net.URL
+import java.util.*
 
 fun Application.mainModule(
     config: ApplicationConfig,
@@ -47,6 +48,15 @@ fun Application.mainModule(
     val metricsRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
     install(MicrometerMetrics) {
         registry = metricsRegistry
+    }
+    install(CallLogging) {
+        level = Level.INFO
+        filter { call -> !call.request.path().matches(Regex(".*/isready|.*/isalive|.*/metrics")) }
+        callIdMdc("X-Correlation-ID")
+    }
+    install(CallId) {
+        retrieveFromHeader("X-Correlation-ID")
+        generate { UUID.randomUUID().toString() }
     }
     install(Locations)
     install(ContentNegotiation) {
