@@ -2,6 +2,7 @@ package no.nav.navansatt
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
+import io.ktor.client.features.*
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
@@ -21,26 +22,26 @@ data class NavAnsattResult(
     val navn: String,
     val fornavn: String,
     val etternavn: String,
-    val epost: String
+    val epost: String,
 )
 
 @Serializable
 data class NAVEnhetResult(
     val id: String,
     val navn: String,
-    val nivaa: String
+    val nivaa: String,
 )
 
 @Serializable
 data class Fagomrade(
-    val kode: String
+    val kode: String,
 )
 
 @KtorExperimentalLocationsAPI
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,
-    norg2Client: Norg2Client
+    norg2Client: Norg2Client,
 ) {
     simpleGet("/ping-authenticated") {
         call.respond("OK")
@@ -57,15 +58,15 @@ fun Route.authenticatedRoutes(
                     navn = it.displayName,
                     fornavn = it.firstName,
                     etternavn = it.lastName,
-                    epost = it.email
-                )
+                    epost = it.email,
+                ),
             )
         } ?: run {
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "User not found"
-                )
+                    message = "User not found",
+                ),
             )
         }
     }
@@ -83,8 +84,8 @@ fun Route.authenticatedRoutes(
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}"
-                )
+                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
+                ),
             )
         }
     }
@@ -94,21 +95,37 @@ fun Route.authenticatedRoutes(
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
             val result = axsysClient.hentTilganger(location.ident)
-            val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
-            call.respond(
-                enheter.map {
-                    NAVEnhetResult(
-                        id = it.enhetNr,
-                        navn = it.navn,
-                        nivaa = it.orgNivaa
+            if (result.enheter.isNotEmpty()) {
+                val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
+                call.respond(
+                    enheter.map {
+                        NAVEnhetResult(
+                            id = it.enhetNr,
+                            navn = it.navn,
+                            nivaa = it.orgNivaa,
+                        )
+                    }
+                )
+            } else {
+                call.response.status(HttpStatusCode.NotFound)
+                call.respond(
+                    ApiError(
+                        message = "Fant ingen enheter for ident ${location.ident}",
                     )
-                }
-            )
+                )
+            }
         } catch (error: NAVAnsattNotFoundError) {
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}"
+                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
+                )
+            )
+        } catch (error: ClientRequestException) {
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(
+                ApiError(
+                    message = "Feil i request for ${location.ident} melding ${error.response.content} status ${error.response}",
                 )
             )
         }
@@ -128,7 +145,7 @@ fun Route.authenticatedRoutes(
                     navn = it.displayName,
                     fornavn = it.firstName,
                     etternavn = it.lastName,
-                    epost = it.email
+                    epost = it.email,
                 )
             }
             call.respond(navAnsattData)
@@ -136,7 +153,7 @@ fun Route.authenticatedRoutes(
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-enhet med id ${location.enhetId}"
+                    message = "Fant ikke NAV-enhet med id ${location.enhetId}",
                 )
             )
         }
@@ -147,7 +164,7 @@ fun Routing.Routes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,
-    norg2Client: Norg2Client
+    norg2Client: Norg2Client,
 ) {
     simpleGet("/ping") {
         call.respond("OK")
@@ -164,7 +181,7 @@ fun Routing.Routes(
     simpleGet("/") {
         call.respondText(
             "<!doctype html><html><head><title>NAV-ansatt REST API</title></head><body>Her kjører <a href=\"https://github.com/navikt/navansatt\">NAV-ansatt-API-et</a>.</body></html>",
-            ContentType.parse("text/html")
+            ContentType.parse("text/html"),
         )
     }
 
@@ -172,7 +189,7 @@ fun Routing.Routes(
         authenticatedRoutes(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = axsysClient,
-            norg2Client = norg2Client
+            norg2Client = norg2Client,
         )
     }
 }
