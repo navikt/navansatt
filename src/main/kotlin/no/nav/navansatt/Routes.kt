@@ -2,7 +2,7 @@ package no.nav.navansatt
 
 import io.ktor.application.call
 import io.ktor.auth.authenticate
-import io.ktor.client.features.*
+import io.ktor.client.features.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.locations.KtorExperimentalLocationsAPI
