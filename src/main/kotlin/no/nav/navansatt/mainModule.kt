@@ -9,11 +9,16 @@ import io.ktor.auth.Authentication
 import io.ktor.auth.jwt.JWTPrincipal
 import io.ktor.auth.jwt.jwt
 import io.ktor.client.HttpClient
-import io.ktor.features.*
-import io.ktor.http.*
+import io.ktor.features.CallId
+import io.ktor.features.CallLogging
+import io.ktor.features.ContentNegotiation
+import io.ktor.features.StatusPages
+import io.ktor.features.callIdMdc
+import io.ktor.http.HttpStatusCode
 import io.ktor.locations.Locations
 import io.ktor.metrics.micrometer.MicrometerMetrics
-import io.ktor.request.*
+import io.ktor.request.header
+import io.ktor.request.path
 import io.ktor.response.respond
 import io.ktor.routing.routing
 import io.ktor.serialization.json
@@ -22,7 +27,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.event.Level
 import java.net.URL
-import java.util.*
+import java.util.UUID
 
 fun Application.mainModule(
     config: ApplicationConfig,
