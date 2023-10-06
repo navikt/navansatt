@@ -40,20 +40,22 @@ spec:
           namespace: teampensjon
         - application: pensjon-pen-q2
           namespace: teampensjon
-        - application: pensjon-pen-q4
-          namespace: teampensjon
         - application: pensjon-pen-q5
           namespace: teampensjon
         - application: pensjon-psak-q0
           namespace: teampensjon
+        - application: pensjon-psak-q0
+          namespace: pensjon-q0
         - application: pensjon-psak-q1
           namespace: teampensjon
+        - application: pensjon-psak-q1
+          namespace: pensjon-q1
         - application: pensjon-psak-q2
-          namespace: teampensjon
-        - application: pensjon-psak-q4
           namespace: teampensjon
         - application: pensjon-psak-q5
           namespace: teampensjon
+        - application: pensjon-psak-q5
+          namespace: pensjon-q5
         - application: etterlatte-brev-api
           namespace: etterlatte
           cluster: dev-gcp
