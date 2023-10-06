@@ -11,6 +11,11 @@ env:
 jobs:
   build:
     name: Build and push Docker container
+    permissions:
+      contents: "read"
+      checks: "write"
+      id-token: "write"
+      packages: "write"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
