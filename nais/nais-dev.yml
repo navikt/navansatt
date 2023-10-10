@@ -36,12 +36,20 @@ spec:
       rules:
         - application: pensjon-pen-q0
           namespace: teampensjon
+        - application: pensjon-pen-q0
+          namespace: pensjon-q0
         - application: pensjon-pen-q1
           namespace: teampensjon
+        - application: pensjon-pen-q1
+          namespace: pensjon-q1
         - application: pensjon-pen-q2
           namespace: teampensjon
+        - application: pensjon-pen-q2
+          namespace: pensjon-q2
         - application: pensjon-pen-q5
           namespace: teampensjon
+        - application: pensjon-pen-q5
+          namespace: pensjon-q5
         - application: pensjon-psak-q0
           namespace: teampensjon
         - application: pensjon-psak-q0
