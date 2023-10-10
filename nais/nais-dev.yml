@@ -62,6 +62,9 @@ spec:
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: dev-gcp
+        - application: eessi-pensjon-journalforing-q2
+          namespace: eessipensjon
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
