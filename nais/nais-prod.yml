@@ -43,6 +43,9 @@ spec:
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: prod-gcp
+        - application: eessi-pensjon-journalforing
+          namespace: eessipensjon
+          cluster: prod-gcp
   azure:
     application:
       enabled: true
