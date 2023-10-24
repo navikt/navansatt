@@ -68,7 +68,8 @@ class RoutesTest {
                         navn = "Luke Skywalker",
                         fornavn = "Luke",
                         etternavn = "Skywalker",
-                        epost = "luke.skywalker@example.com"
+                        epost = "luke.skywalker@example.com",
+                        groups = emptyList()
                     ),
                     Json.decodeFromString(response.content ?: "")
                 )
@@ -322,21 +323,24 @@ class RoutesTest {
                             navn = "Luke Skywalker",
                             fornavn = "Luke",
                             etternavn = "Skywalker",
-                            epost = "luke.skywalker@example.com"
+                            epost = "luke.skywalker@example.com",
+                            groups = emptyList()
                         ),
                         NavAnsattResult(
                             ident = "darthvad",
                             navn = "Darth Vader",
                             fornavn = "Darth",
                             etternavn = "Vader",
-                            epost = "darth.vader@example.com"
+                            epost = "darth.vader@example.com",
+                            groups = emptyList()
                         ),
                         NavAnsattResult(
                             ident = "prinleia",
                             navn = "Prinsesse Leia Organa",
                             fornavn = "Leia",
                             etternavn = "Organa",
-                            epost = "prinsesse.leia.organa@example.com"
+                            epost = "prinsesse.leia.organa@example.com",
+                            groups = emptyList()
                         )
                     ),
                     Json.decodeFromString(response.content ?: "")
