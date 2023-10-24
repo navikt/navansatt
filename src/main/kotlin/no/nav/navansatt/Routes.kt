@@ -23,6 +23,7 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
+    val groups: List<String>
 )
 
 @Serializable
@@ -59,6 +60,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    groups = it.groups
                 ),
             )
         } ?: run {
@@ -146,6 +148,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    groups = it.groups
                 )
             }
             call.respond(navAnsattData)
