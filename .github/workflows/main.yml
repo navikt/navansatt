@@ -41,23 +41,24 @@ jobs:
           docker push ${docker_image}
 
   deploy:
+    permissions:
+      contents: "read"
+      id-token: "write"  
     name: Deploy to NAIS
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         name: Dev deploy
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_DEV }}
           CLUSTER: dev-fss
           RESOURCE: nais/nais-dev.yml
           VAR: image=${{ env.docker_image }}
-      - uses: nais/deploy/actions/deploy@v1
+      - uses: nais/deploy/actions/deploy@v2
         name: Prod deploy
         env:
-          APIKEY: ${{ secrets.NAIS_DEPLOY_APIKEY_PROD }}
           CLUSTER: prod-fss
           RESOURCE: nais/nais-prod.yml
           VAR: image=${{ env.docker_image }}
