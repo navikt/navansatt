@@ -62,6 +62,9 @@ spec:
         - application: ida
           namespace: traktor
           cluster: prod-fss
+        - application: skribenten-backend
+          namespace: pensjonsbrev
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
