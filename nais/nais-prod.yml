@@ -46,6 +46,9 @@ spec:
         - application: eessi-pensjon-journalforing
           namespace: eessipensjon
           cluster: prod-gcp
+        - application: skribenten-backend
+          namespace: pensjonsbrev
+          cluster: prod-gcp
   azure:
     application:
       enabled: true
