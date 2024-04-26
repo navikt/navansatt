@@ -9,8 +9,8 @@ spec:
   image: "{{{ image }}}"
   port: 7000
   replicas:
-    min: 2
-    max: 4
+    min: 4
+    max: 8
   liveness:
     path: "/internal/isalive"
     initialDelay: 3
@@ -24,9 +24,9 @@ spec:
     timeout: 1
   resources:
     limits:
-      memory: "2048Mi"
+      memory: "4096Mi"
     requests:
-      memory: "1024Mi"
+      memory: "2048Mi"
   ingresses:
     - "https://navansatt.intern.nav.no"
     - "https://navansatt.prod-fss-pub.nais.io"
