@@ -74,6 +74,10 @@ spec:
       tenant: trygdeetaten.no
       allowAllUsers: true
   webproxy: true
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
   env:
     - name: "LDAP_URL"
       value: "ldaps://ldapgw.preprod.local"
