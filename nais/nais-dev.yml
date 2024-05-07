@@ -68,6 +68,9 @@ spec:
         - application: skribenten-backend-lokal
           namespace: pensjonsbrev
           cluster: dev-gcp
+        - application: pensjon-psak-q2
+          namespace: pensjon-q2
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
