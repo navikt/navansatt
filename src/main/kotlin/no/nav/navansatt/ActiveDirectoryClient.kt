@@ -1,8 +1,12 @@
 package no.nav.navansatt
 
+import io.opentelemetry.api.GlobalOpenTelemetry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.LoggerFactory
 import java.util.Hashtable
 import java.util.regex.Pattern
@@ -41,6 +45,7 @@ class ActiveDirectoryClient(
         }
     }
 
+    @WithSpan
     suspend fun getUsers(idents: List<String>): List<User> = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
@@ -89,6 +94,7 @@ class ActiveDirectoryClient(
         users
     }
 
+    @WithSpan
     suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
