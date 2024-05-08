@@ -106,7 +106,7 @@ spec:
     - name: "OTEL_LOGS_EXPORTER"
       value: "otlp"
     - name: "OTEL_RESOURCE_ATTRIBUTES"
-      value: "service.name=navansatt-dev,service.version=navansatt-dev,deployment.environment=dev"
+      value: "service.name=navansatt,service.version=navansatt,deployment.environment=q2"
     - name: "OTEL_TRACES_EXPORTER"
       value: "otlp"
   vault:
