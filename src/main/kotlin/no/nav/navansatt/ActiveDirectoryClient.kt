@@ -1,10 +1,10 @@
 package no.nav.navansatt
 
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
-import io.opentelemetry.api.trace.SpanKind
-import io.opentelemetry.instrumentation.annotations.WithSpan
 import org.slf4j.LoggerFactory
 import java.util.Hashtable
 import java.util.regex.Pattern
