@@ -1,5 +1,6 @@
 package no.nav.navansatt
 
+import com.auth0.jwk.GuavaCachedJwkProvider
 import com.auth0.jwk.UrlJwkProvider
 import io.ktor.application.Application
 import io.ktor.application.call
@@ -104,7 +105,7 @@ fun Application.mainModule(
     install(Authentication) {
         jwt("azure") {
             verifier(
-                UrlJwkProvider(URL(azureOidc.jwks_uri)),
+                GuavaCachedJwkProvider(UrlJwkProvider(URL(azureOidc.jwks_uri))),
                 azureOidc.issuer
             ) {
                 config.azureClientId?.also { withAudience(it) }
@@ -114,7 +115,7 @@ fun Application.mainModule(
 
         jwt("sts") {
             verifier(
-                UrlJwkProvider(URL(stsOidc.jwks_uri)),
+                GuavaCachedJwkProvider(UrlJwkProvider(URL(stsOidc.jwks_uri))),
                 stsOidc.issuer
             )
             validate { credential -> JWTPrincipal(credential.payload) }
