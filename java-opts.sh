@@ -1,9 +1,5 @@
 #!/usr/bin/env sh
 
-if [ ! -z "${OTEL_EXPORTER_OTLP_ENDPOINT}" ]; then
-    JAVA_OPTS="${JAVA_OPTS} -javaagent:/app/opentelemetry-javaagent.jar"
-fi
-
 if test -r "${NAV_TRUSTSTORE_PATH}";
 then
     if ! keytool -list -keystore ${NAV_TRUSTSTORE_PATH} -storepass "${NAV_TRUSTSTORE_PASSWORD}" > /dev/null;
