@@ -8,8 +8,6 @@ RUN apt-get update && apt-get install -y \
 
 WORKDIR /app
 
-RUN curl -L -O https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar
-
 ENV TZ="Europe/Oslo"
 
 ENV MAIN_CLASS=no.nav.pensjon.pen_app.PenApplication
