@@ -58,10 +58,10 @@ fun Application.mainModule(
     install(CallLogging) {
         level = Level.INFO
         filter { call -> !call.request.path().matches(Regex(".*/isready|.*/isalive|.*/metrics")) }
-        callIdMdc("X-Correlation-ID")
+        callIdMdc("correlationId")
     }
     install(CallId) {
-        retrieveFromHeader("X-Correlation-ID")
+        retrieveFromHeader("correlationId")
         generate { UUID.randomUUID().toString() }
     }
     install(Locations)
