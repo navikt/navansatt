@@ -1,19 +1,19 @@
 package no.nav.navansatt
 
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
 import io.ktor.http.HttpMethod.Companion.Get
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
-import io.ktor.locations.Locations
-import io.ktor.routing.routing
-import io.ktor.serialization.json
+import io.ktor.serialization.kotlinx.json.json
+import io.ktor.server.application.install
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.Locations
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
 import io.ktor.server.testing.TestApplicationEngine
 import io.ktor.server.testing.handleRequest
 import io.ktor.server.testing.withTestApplication
 import io.mockk.coEvery
 import io.mockk.mockk
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
@@ -24,12 +24,12 @@ class RoutesTest {
         withMockApp(
             activeDirectoryClient = mockk(),
             axsysClient = mockk(),
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/ping-authenticated"
+                    uri = "/ping-authenticated",
                 )
             ) {
                 assertEquals(OK, response.status())
@@ -47,18 +47,18 @@ class RoutesTest {
             firstName = "Luke",
             lastName = "Skywalker",
             email = "luke.skywalker@example.com",
-            groups = emptyList()
+            groups = emptyList(),
         )
 
         withMockApp(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = mockk(),
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/navansatt/lukesky"
+                    uri = "/navansatt/lukesky",
                 )
             ) {
                 assertEquals(OK, response.status())
@@ -69,9 +69,9 @@ class RoutesTest {
                         fornavn = "Luke",
                         etternavn = "Skywalker",
                         epost = "luke.skywalker@example.com",
-                        groups = emptyList()
+                        groups = emptyList(),
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -86,20 +86,20 @@ class RoutesTest {
         withMockApp(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = mockk(),
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/navansatt/nobody"
+                    uri = "/navansatt/nobody",
                 )
             ) {
                 assertEquals(NotFound, response.status())
                 assertEquals(
                     ApiError(
-                        message = "User not found"
+                        message = "User not found",
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -114,12 +114,12 @@ class RoutesTest {
                 AxsysEnhet(
                     enhetId = "123",
                     navn = "NAV Kardemomme By",
-                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE")
+                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE"),
                 ),
                 AxsysEnhet(
                     enhetId = "456",
                     navn = "NAV Andeby",
-                    fagomrader = listOf("SJAKK", "PEN")
+                    fagomrader = listOf("SJAKK", "PEN"),
                 )
             )
         )
@@ -127,7 +127,7 @@ class RoutesTest {
         withMockApp(
             activeDirectoryClient = mockk(),
             axsysClient = axsysClient,
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
@@ -141,9 +141,9 @@ class RoutesTest {
                         Fagomrade(kode = "PEN"),
                         Fagomrade(kode = "UFO"),
                         Fagomrade(kode = "PEPPERKAKE"),
-                        Fagomrade(kode = "SJAKK")
+                        Fagomrade(kode = "SJAKK"),
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -158,20 +158,20 @@ class RoutesTest {
         withMockApp(
             activeDirectoryClient = mockk(),
             axsysClient = axsysClient,
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/navansatt/nobody/fagomrader"
+                    uri = "/navansatt/nobody/fagomrader",
                 )
             ) {
                 assertEquals(NotFound, response.status())
                 assertEquals(
                     ApiError(
-                        message = "Fant ikke NAV-ansatt med id nobody"
+                        message = "Fant ikke NAV-ansatt med id nobody",
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -187,12 +187,12 @@ class RoutesTest {
                 AxsysEnhet(
                     enhetId = "123",
                     navn = "NAV Kardemomme By",
-                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE")
+                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE"),
                 ),
                 AxsysEnhet(
                     enhetId = "456",
                     navn = "NAV Andeby",
-                    fagomrader = listOf("SJAKK", "PEN")
+                    fagomrader = listOf("SJAKK", "PEN"),
                 )
             )
         )
@@ -200,24 +200,24 @@ class RoutesTest {
             Norg2Enhet(
                 enhetNr = "123",
                 navn = "NAV Kardemomme By",
-                orgNivaa = "ABC"
+                orgNivaa = "ABC",
             ),
             Norg2Enhet(
                 enhetNr = "456",
                 navn = "NAV Andeby",
-                orgNivaa = "DEF"
+                orgNivaa = "DEF",
             )
         )
 
         withMockApp(
             activeDirectoryClient = mockk(),
             axsysClient = axsysClient,
-            norg2Client = norg2Client
+            norg2Client = norg2Client,
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/navansatt/lukesky/enheter"
+                    uri = "/navansatt/lukesky/enheter",
                 )
             ) {
                 assertEquals(OK, response.status())
@@ -226,15 +226,15 @@ class RoutesTest {
                         NAVEnhetResult(
                             id = "123",
                             navn = "NAV Kardemomme By",
-                            nivaa = "ABC"
+                            nivaa = "ABC",
                         ),
                         NAVEnhetResult(
                             id = "456",
                             navn = "NAV Andeby",
-                            nivaa = "DEF"
+                            nivaa = "DEF",
                         )
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -248,12 +248,12 @@ class RoutesTest {
         withMockApp(
             activeDirectoryClient = mockk(),
             axsysClient = axsysClient,
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/navansatt/nobody/enheter"
+                    uri = "/navansatt/nobody/enheter",
                 )
             ) {
                 assertEquals(NotFound, response.status())
@@ -261,7 +261,7 @@ class RoutesTest {
                     ApiError(
                         message = "Fant ikke NAV-ansatt med id nobody"
                     ),
-                    Json.decodeFromString(response.content ?: "")
+                    Json.decodeFromString(response.content ?: ""),
                 )
             }
         }
@@ -275,7 +275,7 @@ class RoutesTest {
         coEvery { axsysClient.hentAnsattIdenter("123") } returns listOf(
             Ident("lukesky"),
             Ident("darthvad"),
-            Ident("prinleia")
+            Ident("prinleia"),
         )
         coEvery { activeDirectoryClient.getUsers(listOf("lukesky", "darthvad", "prinleia")) } returns listOf(
             User(
@@ -284,7 +284,7 @@ class RoutesTest {
                 firstName = "Luke",
                 lastName = "Skywalker",
                 email = "luke.skywalker@example.com",
-                groups = emptyList()
+                groups = emptyList(),
             ),
             User(
                 ident = "darthvad",
@@ -292,7 +292,7 @@ class RoutesTest {
                 firstName = "Darth",
                 lastName = "Vader",
                 email = "darth.vader@example.com",
-                groups = emptyList()
+                groups = emptyList(),
             ),
             User(
                 ident = "prinleia",
@@ -300,19 +300,19 @@ class RoutesTest {
                 firstName = "Leia",
                 lastName = "Organa",
                 email = "prinsesse.leia.organa@example.com",
-                groups = emptyList()
+                groups = emptyList(),
             )
         )
 
         withMockApp(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = axsysClient,
-            norg2Client = mockk()
+            norg2Client = mockk(),
         ) {
             with(
                 handleRequest(
                     method = Get,
-                    uri = "/enhet/123/navansatte"
+                    uri = "/enhet/123/navansatte",
                 )
             ) {
                 assertEquals(OK, response.status())
@@ -341,7 +341,7 @@ class RoutesTest {
                             etternavn = "Organa",
                             epost = "prinsesse.leia.organa@example.com",
                             groups = emptyList()
-                        )
+                        ),
                     ),
                     Json.decodeFromString(response.content ?: "")
                 )
@@ -377,11 +377,12 @@ class RoutesTest {
         }
     }
 
+    @OptIn(KtorExperimentalLocationsAPI::class)
     private fun withMockApp(
         activeDirectoryClient: ActiveDirectoryClient,
         axsysClient: AxsysClient,
         norg2Client: Norg2Client,
-        testCode: TestApplicationEngine.() -> Unit
+        testCode: TestApplicationEngine.() -> Unit,
     ) {
         withTestApplication(
             {
@@ -397,7 +398,7 @@ class RoutesTest {
                     )
                 }
             },
-            testCode
+            testCode,
         )
     }
 }

@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import java.util.Hashtable
+import java.util.Locale
 import java.util.regex.Pattern
 import javax.naming.Context
 import javax.naming.NamingEnumeration
@@ -22,13 +23,14 @@ data class User(
     val firstName: String,
     val lastName: String,
     val email: String,
-    val groups: List<String>
+    val groups: List<String>,
 )
+
 class ActiveDirectoryClient(
     val url: String,
     val base: String,
     val username: String,
-    val password: String?
+    val password: String?,
 ) {
     companion object {
         private val LOG = LoggerFactory.getLogger(ActiveDirectoryClient::class.java)
@@ -71,7 +73,7 @@ class ActiveDirectoryClient(
                     firstName = readAttribute(entry.attributes, "givenname"),
                     lastName = readAttribute(entry.attributes, "sn"),
                     email = readEmail(entry.attributes),
-                    groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
+                    groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
                 )
             )
         }
@@ -108,7 +110,7 @@ class ActiveDirectoryClient(
 
             val returnedIdent = readAttribute(entry.attributes, "cn")
 
-            if (ident.toLowerCase() != returnedIdent.toLowerCase()) {
+            if (ident.lowercase(Locale.getDefault()) != returnedIdent.lowercase(Locale.getDefault())) {
                 LOG.warn("Mismatch in ident: Asked for ident $ident but a user with CN $returnedIdent was found.")
             }
 
@@ -118,7 +120,7 @@ class ActiveDirectoryClient(
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
                 email = readEmail(entry.attributes),
-                groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
+                groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
             )
         }
 
