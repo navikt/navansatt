@@ -1,17 +1,15 @@
 package no.nav.navansatt
 
-import io.ktor.http.HttpMethod.Companion.Get
+import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.application.install
 import io.ktor.server.locations.KtorExperimentalLocationsAPI
 import io.ktor.server.locations.Locations
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.server.routing.routing
-import io.ktor.server.testing.TestApplicationEngine
-import io.ktor.server.testing.handleRequest
-import io.ktor.server.testing.withTestApplication
+import io.ktor.server.testing.ApplicationTestBuilder
+import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.serialization.json.Json
@@ -26,14 +24,8 @@ class RoutesTest {
             axsysClient = mockk(),
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/ping-authenticated",
-                )
-            ) {
-                assertEquals(OK, response.status())
-            }
+            val response = client.get("/ping-authenticated")
+            assertEquals(OK, response.status)
         }
     }
 
@@ -55,25 +47,19 @@ class RoutesTest {
             axsysClient = mockk(),
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/lukesky",
-                )
-            ) {
-                assertEquals(OK, response.status())
-                assertEquals(
-                    NavAnsattResult(
-                        ident = "lukesky",
-                        navn = "Luke Skywalker",
-                        fornavn = "Luke",
-                        etternavn = "Skywalker",
-                        epost = "luke.skywalker@example.com",
-                        groups = emptyList(),
-                    ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+            val response = client.get("/navansatt/lukesky")
+            assertEquals(OK, response.status)
+            assertEquals(
+                NavAnsattResult(
+                    ident = "lukesky",
+                    navn = "Luke Skywalker",
+                    fornavn = "Luke",
+                    etternavn = "Skywalker",
+                    epost = "luke.skywalker@example.com",
+                    groups = emptyList(),
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -88,20 +74,14 @@ class RoutesTest {
             axsysClient = mockk(),
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/nobody",
-                )
-            ) {
-                assertEquals(NotFound, response.status())
-                assertEquals(
-                    ApiError(
-                        message = "User not found",
-                    ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+            val response = client.get("/navansatt/nobody")
+            assertEquals(NotFound, response.status)
+            assertEquals(
+                ApiError(
+                    message = "User not found",
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -129,23 +109,17 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/lukesky/fagomrader"
-                )
-            ) {
-                assertEquals(OK, response.status())
-                assertEquals(
-                    listOf(
-                        Fagomrade(kode = "PEN"),
-                        Fagomrade(kode = "UFO"),
-                        Fagomrade(kode = "PEPPERKAKE"),
-                        Fagomrade(kode = "SJAKK"),
-                    ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+            val response = client.get("/navansatt/lukesky/fagomrader")
+            assertEquals(OK, response.status)
+            assertEquals(
+                listOf(
+                    Fagomrade(kode = "PEN"),
+                    Fagomrade(kode = "UFO"),
+                    Fagomrade(kode = "PEPPERKAKE"),
+                    Fagomrade(kode = "SJAKK"),
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -160,20 +134,14 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/nobody/fagomrader",
-                )
-            ) {
-                assertEquals(NotFound, response.status())
-                assertEquals(
-                    ApiError(
-                        message = "Fant ikke NAV-ansatt med id nobody",
-                    ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+            val response = client.get("/navansatt/nobody/fagomrader")
+            assertEquals(NotFound, response.status)
+            assertEquals(
+                ApiError(
+                    message = "Fant ikke NAV-ansatt med id nobody",
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -214,29 +182,23 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = norg2Client,
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/lukesky/enheter",
-                )
-            ) {
-                assertEquals(OK, response.status())
-                assertEquals(
-                    listOf(
-                        NAVEnhetResult(
-                            id = "123",
-                            navn = "NAV Kardemomme By",
-                            nivaa = "ABC",
-                        ),
-                        NAVEnhetResult(
-                            id = "456",
-                            navn = "NAV Andeby",
-                            nivaa = "DEF",
-                        )
+            val response = client.get("/navansatt/lukesky/enheter")
+            assertEquals(OK, response.status)
+            assertEquals(
+                listOf(
+                    NAVEnhetResult(
+                        id = "123",
+                        navn = "NAV Kardemomme By",
+                        nivaa = "ABC",
                     ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+                    NAVEnhetResult(
+                        id = "456",
+                        navn = "NAV Andeby",
+                        nivaa = "DEF",
+                    )
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -250,20 +212,14 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/navansatt/nobody/enheter",
-                )
-            ) {
-                assertEquals(NotFound, response.status())
-                assertEquals(
-                    ApiError(
-                        message = "Fant ikke NAV-ansatt med id nobody"
-                    ),
-                    Json.decodeFromString(response.content ?: ""),
-                )
-            }
+            val response = client.get("/navansatt/nobody/enheter")
+            assertEquals(NotFound, response.status)
+            assertEquals(
+                ApiError(
+                    message = "Fant ikke NAV-ansatt med id nobody"
+                ),
+                Json.decodeFromString(response.bodyAsText()),
+            )
         }
     }
 
@@ -309,43 +265,37 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = mockk(),
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/enhet/123/navansatte",
-                )
-            ) {
-                assertEquals(OK, response.status())
-                assertEquals(
-                    listOf(
-                        NavAnsattResult(
-                            ident = "lukesky",
-                            navn = "Luke Skywalker",
-                            fornavn = "Luke",
-                            etternavn = "Skywalker",
-                            epost = "luke.skywalker@example.com",
-                            groups = emptyList()
-                        ),
-                        NavAnsattResult(
-                            ident = "darthvad",
-                            navn = "Darth Vader",
-                            fornavn = "Darth",
-                            etternavn = "Vader",
-                            epost = "darth.vader@example.com",
-                            groups = emptyList()
-                        ),
-                        NavAnsattResult(
-                            ident = "prinleia",
-                            navn = "Prinsesse Leia Organa",
-                            fornavn = "Leia",
-                            etternavn = "Organa",
-                            epost = "prinsesse.leia.organa@example.com",
-                            groups = emptyList()
-                        ),
+            val response = client.get("/enhet/123/navansatte")
+            assertEquals(OK, response.status)
+            assertEquals(
+                listOf(
+                    NavAnsattResult(
+                        ident = "lukesky",
+                        navn = "Luke Skywalker",
+                        fornavn = "Luke",
+                        etternavn = "Skywalker",
+                        epost = "luke.skywalker@example.com",
+                        groups = emptyList(),
                     ),
-                    Json.decodeFromString(response.content ?: "")
-                )
-            }
+                    NavAnsattResult(
+                        ident = "darthvad",
+                        navn = "Darth Vader",
+                        fornavn = "Darth",
+                        etternavn = "Vader",
+                        epost = "darth.vader@example.com",
+                        groups = emptyList(),
+                    ),
+                    NavAnsattResult(
+                        ident = "prinleia",
+                        navn = "Prinsesse Leia Organa",
+                        fornavn = "Leia",
+                        etternavn = "Organa",
+                        epost = "prinsesse.leia.organa@example.com",
+                        groups = emptyList(),
+                    ),
+                ),
+                Json.decodeFromString(response.bodyAsText())
+            )
         }
     }
 
@@ -360,20 +310,14 @@ class RoutesTest {
             axsysClient = axsysClient,
             norg2Client = mockk()
         ) {
-            with(
-                handleRequest(
-                    method = Get,
-                    uri = "/enhet/4444/navansatte"
-                )
-            ) {
-                assertEquals(NotFound, response.status())
-                assertEquals(
-                    ApiError(
-                        message = "Fant ikke NAV-enhet med id 4444"
-                    ),
-                    Json.decodeFromString(response.content ?: "")
-                )
-            }
+            val response = client.get("/enhet/4444/navansatte")
+            assertEquals(NotFound, response.status)
+            assertEquals(
+                ApiError(
+                    message = "Fant ikke NAV-enhet med id 4444"
+                ),
+                Json.decodeFromString(response.bodyAsText())
+            )
         }
     }
 
@@ -382,23 +326,20 @@ class RoutesTest {
         activeDirectoryClient: ActiveDirectoryClient,
         axsysClient: AxsysClient,
         norg2Client: Norg2Client,
-        testCode: TestApplicationEngine.() -> Unit,
-    ) {
-        withTestApplication(
-            {
-                install(Locations)
-                install(ContentNegotiation) {
-                    json()
-                }
-                routing {
-                    authenticatedRoutes(
-                        activeDirectoryClient = activeDirectoryClient,
-                        axsysClient = axsysClient,
-                        norg2Client = norg2Client
-                    )
-                }
-            },
-            testCode,
-        )
+        testCode: suspend ApplicationTestBuilder.() -> Unit,
+    ) = testApplication {
+        install(Locations)
+        install(ContentNegotiation) {
+            json()
+        }
+        routing {
+            authenticatedRoutes(
+                activeDirectoryClient = activeDirectoryClient,
+                axsysClient = axsysClient,
+                norg2Client = norg2Client
+            )
+        }
+
+        testCode()
     }
 }
