@@ -2,6 +2,8 @@ name: Build, push, and deploy
 
 on:
   push:
+    branches:
+      - main
 
 env:
   docker_image: docker.pkg.github.com/${{ github.repository }}/navansatt:${{ github.sha }}

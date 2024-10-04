@@ -7,6 +7,7 @@ import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.engine.embeddedServer
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import org.apache.http.ssl.SSLContexts
 
 @Serializable
@@ -32,7 +33,9 @@ fun main() {
         }
         install(HttpCache)
         install(ContentNegotiation) {
-            json()
+            json(Json {
+                ignoreUnknownKeys = true
+            })
         }
     }
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {

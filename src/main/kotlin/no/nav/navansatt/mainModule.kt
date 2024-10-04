@@ -11,6 +11,8 @@ import io.ktor.server.application.log
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
+import io.ktor.server.locations.KtorExperimentalLocationsAPI
+import io.ktor.server.locations.Locations
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
@@ -29,6 +31,7 @@ import java.net.URL
 import java.util.Locale
 import java.util.UUID
 
+@OptIn(KtorExperimentalLocationsAPI::class)
 fun Application.mainModule(
     config: ApplicationConfig,
     httpClient: HttpClient,
@@ -63,6 +66,7 @@ fun Application.mainModule(
         retrieveFromHeader("correlationId")
         generate { UUID.randomUUID().toString() }
     }
+    install(Locations)
     install(ContentNegotiation) {
         json()
     }
