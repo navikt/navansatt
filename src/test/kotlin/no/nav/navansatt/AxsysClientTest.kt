@@ -11,6 +11,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
 import org.junit.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
@@ -120,7 +121,9 @@ class AxsysClientTest {
     private fun makeMockClient(handler: suspend MockRequestHandleScope.(HttpRequestData) -> HttpResponseData): HttpClient {
         return HttpClient(MockEngine) {
             install(ContentNegotiation) {
-                json()
+                json(Json {
+                    ignoreUnknownKeys = true
+                })
             }
             engine {
                 addHandler { request ->
