@@ -1,21 +1,20 @@
 package no.nav.navansatt
 
-import io.ktor.client.plugins.ClientRequestException
+import io.ktor.application.call
+import io.ktor.auth.authenticate
+import io.ktor.client.features.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.call
-import io.ktor.server.auth.authenticate
-import io.ktor.server.locations.KtorExperimentalLocationsAPI
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.get
-import io.ktor.server.response.respond
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.Routing
-import io.ktor.util.InternalAPI
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
+import io.ktor.locations.KtorExperimentalLocationsAPI
+import io.ktor.locations.Location
+import io.ktor.locations.get
+import io.ktor.response.respond
+import io.ktor.response.respondText
+import io.ktor.routing.Route
+import io.ktor.routing.Routing
+import io.micrometer.prometheus.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
-import io.ktor.server.routing.get as simpleGet
+import io.ktor.routing.get as simpleGet
 
 @Serializable
 data class NavAnsattResult(
@@ -24,7 +23,7 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
-    val groups: List<String>,
+    val groups: List<String>
 )
 
 @Serializable
@@ -39,7 +38,6 @@ data class Fagomrade(
     val kode: String,
 )
 
-@OptIn(InternalAPI::class)
 @KtorExperimentalLocationsAPI
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
@@ -165,8 +163,7 @@ fun Route.authenticatedRoutes(
     }
 }
 
-@OptIn(KtorExperimentalLocationsAPI::class)
-fun Routing.routes(
+fun Routing.Routes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,

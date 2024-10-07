@@ -1,4 +1,4 @@
-name: Build, push, and deploy sandbox
+name: Build, push, and deploy
 
 on:
   push:
@@ -18,17 +18,16 @@ jobs:
       packages: "write"
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path: ~/.m2
           key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
           restore-keys: |
             ${{ runner.os }}-maven-
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v1
         with:
-          distribution: temurin
-          java-version: 21
+          java-version: 14
       - name: Build
         shell: bash
         run: |

@@ -1,8 +1,7 @@
 package no.nav.navansatt
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.ResponseException
+import io.ktor.client.features.ResponseException
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
@@ -45,9 +44,9 @@ class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     suspend fun hentTilganger(ident: String): TilgangResponse {
         try {
             return httpClient.get {
-                url("$axsysUrl/api/v1/tilgang/$ident?inkluderAlleEnheter=false")
+                url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
                 axsysHeaders()
-            }.body()
+            }
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
@@ -61,9 +60,9 @@ class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
         try {
             return httpClient.get {
-                url("$axsysUrl/api/v1/enhet/$enhetId/brukere")
+                url(axsysUrl + "/api/v1/enhet/$enhetId/brukere")
                 axsysHeaders()
-            }.body()
+            }
         } catch (e: ResponseException) {
             if (e.response.status == HttpStatusCode.NotFound) {
                 throw EnhetNotFoundError("Fant ikke NAV-enhet med id $enhetId")
