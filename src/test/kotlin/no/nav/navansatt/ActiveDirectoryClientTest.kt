@@ -2,7 +2,7 @@ package no.nav.navansatt
 
 import kotlinx.coroutines.runBlocking
 import no.nav.navansatt.mock.LdapServer
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import java.net.ServerSocket
 import kotlin.concurrent.thread
 import kotlin.test.assertEquals
