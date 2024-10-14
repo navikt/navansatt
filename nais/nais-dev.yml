@@ -36,20 +36,40 @@ spec:
       rules:
         - application: pensjon-pen-q0
           namespace: pensjon-q0
+          cluster: dev-fss
         - application: pensjon-pen-q1
           namespace: pensjon-q1
+          cluster: dev-fss
         - application: pensjon-pen-q2
           namespace: pensjon-q2
+          cluster: dev-fss
         - application: pensjon-pen-q5
           namespace: pensjon-q5
+          cluster: dev-fss
         - application: pensjon-psak-q0
           namespace: pensjon-q0
+          cluster: dev-fss
         - application: pensjon-psak-q1
           namespace: pensjon-q1
+          cluster: dev-fss
         - application: pensjon-psak-q2
           namespace: pensjon-q2
+          cluster: dev-fss
         - application: pensjon-psak-q5
           namespace: pensjon-q5
+          cluster: dev-fss
+        - application: pensjon-psak-q0
+          namespace: pensjon-q0
+          cluster: dev-gcp
+        - application: pensjon-psak-q1
+          namespace: pensjon-q1
+          cluster: dev-gcp
+        - application: pensjon-psak-q2
+          namespace: pensjon-q2
+          cluster: dev-gcp
+        - application: pensjon-psak-q5
+          namespace: pensjon-q5
+          cluster: dev-gcp
         - application: etterlatte-brev-api
           namespace: etterlatte
           cluster: dev-gcp
@@ -70,9 +90,6 @@ spec:
           cluster: dev-gcp
         - application: skribenten-backend-lokal
           namespace: pensjonsbrev
-          cluster: dev-gcp
-        - application: pensjon-psak-q2
-          namespace: pensjon-q2
           cluster: dev-gcp
   azure:
     application:
