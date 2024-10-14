@@ -37,6 +37,10 @@ spec:
           namespace: pensjondeployer
         - application: pensjon-psak
           namespace: pensjondeployer
+          cluster: prod-fss
+        - application: pensjon-psak
+          namespace: pensjondeployer
+          cluster: prod-gcp
         - application: etterlatte-brev-api
           namespace: etterlatte
           cluster: prod-gcp
