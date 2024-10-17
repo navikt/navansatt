@@ -1,58 +1,143 @@
-name: Build, push, and deploy
+
+name: 'Build and deploy sandbox'
 
 on:
   push:
     branches:
       - sandbox
+  workflow_call:
 
 env:
-  docker_image: docker.pkg.github.com/${{ github.repository }}/navansatt:${{ github.sha }}
+  IMAGE_BASE: ghcr.io/${{ github.repository }}
 
 jobs:
   build:
-    name: Build and push Docker container
+    name: "Build Navansatt"
     permissions:
       contents: "read"
       checks: "write"
       id-token: "write"
       packages: "write"
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      image: "${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:${{ env.VERSION }}"
+      image-digest: "${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:@${{ steps.build_push.outputs.digest }}"
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions/checkout@v4
         with:
-          path: ~/.m2
-          key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+          ref: 'sandbox'
+      - name: Set version
+        id: version
+        shell: bash
+        run: |
+          TIME=$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M)
+          COMMIT=$(git rev-parse --short=12 HEAD)
+          export VERSION="$TIME-$COMMIT-sandbox"
+          echo "Building version $VERSION"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+          echo "::set-output name=yearweek::$(date +'%Y-%W')"
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository/*/*
+            !~/.m2/repository/no/nav
+          key: ${{ runner.os }}-maven-${{ steps.version.outputs.yearweek }}-${{ hashFiles('**/pom.xml') }}
           restore-keys: |
-            ${{ runner.os }}-maven-
-      - uses: actions/setup-java@v1
+            ${{ runner.os }}-maven-${{ steps.version.outputs.yearweek }}-
+
+      - uses: actions/setup-java@v4
         with:
-          java-version: 14
+          distribution: 'temurin'
+          java-version: '17'
+      - uses: docker/setup-buildx-action@v3
+
       - name: Build
         shell: bash
         run: |
+          mvn versions:set -DnewVersion="$VERSION" -DgenerateBackupPoms=false -Pgithub-action --batch-mode -DprocessAllModules
           mvn clean install
-      - name: Build and publish Docker image
+        # mvn clean verify -Pgithub-action -Dmaven.wagon.http.retryHandler.count=3 -Dsurefire.rerunFailingTestsCount=2 -Dlogback.configurationFile="${GITHUB_WORKSPACE}/.github/logback-github.xml" --batch-mode --fail-at-end -T 1.5C
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          docker build --tag ${docker_image} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${docker_image}
+          TZ: "Europe/Oslo"
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: NAIS login
+        uses: nais/login@v0
+        id: login
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: teampensjon
+
+      - name: "Build and publish navansatt Docker image"
+        id: build_push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          tags: "${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:${{ env.VERSION }},${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:sandbox"
+          push: true
+          cache-from: |
+            "type=registry,ref=${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:sandbox"
+            "type=registry,ref=${{ steps.login.outputs.registry }}/${{ github.repository }}/navansatt:main"
+          cache-to: type=inline
 
   deploy:
-    name: Deploy to NAIS
+    name: "Deploy"
     permissions:
       contents: "read"
       id-token: "write"
-    needs: build
-    if: github.ref == 'refs/heads/sandbox'
     runs-on: ubuntu-latest
+    needs: build
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+        with:
+          ref: 'sandbox'
       - uses: nais/deploy/actions/deploy@v2
-        name: Dev deploy
+        name: "Deploy to NAIS"
         env:
-          CLUSTER: dev-fss
           RESOURCE: nais/nais-dev.yml
-          VAR: image=${{ env.docker_image }}
+          IMAGE: "${{ needs.build.outputs.image }}"
+          CLUSTER: dev-fss
+          TIMEOUT: 10m
+
+  attest-sign:
+    permissions:
+      contents: read
+      id-token: write
+    needs: [build]
+    runs-on: 'ubuntu-latest'
+    steps:
+      - uses: actions/checkout@v4
+      - name: NAIS login
+        uses: nais/login@v0
+        id: login
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: teampensjon
+      - name: 'Generate SBOM'
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: 'image'
+          format: 'cyclonedx'
+          output: 'trivy-results.cyclonedx'
+          image-ref: "${{ needs.build.outputs.image-digest }}"
+      - name: Attest and sign image
+        id: attest-sign
+        uses: nais/attest-sign@v1
+        with:
+          image_ref: "${{ needs.build.outputs.image-digest }}"
+          sbom: "trivy-results.cyclonedx"
