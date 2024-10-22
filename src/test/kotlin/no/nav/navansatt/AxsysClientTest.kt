@@ -4,6 +4,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.MockRequestHandleScope
 import io.ktor.client.engine.mock.respond
+import io.ktor.client.engine.mock.respondError
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
@@ -12,7 +13,7 @@ import io.ktor.http.headersOf
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
-import org.junit.Test
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import kotlin.test.assertEquals
 
@@ -70,7 +71,7 @@ class AxsysClientTest {
     fun `NAV-ansatt not found`() {
         assertThrows<NAVAnsattNotFoundError> {
             val mockClient = makeMockClient {
-                respond(status = HttpStatusCode.NotFound, content = "")
+                respondError(status = HttpStatusCode.NotFound)
             }
             val client = AxsysClient(httpClient = mockClient, axsysUrl = "http://example")
             runBlocking { client.hentTilganger("nobody") }
@@ -111,7 +112,7 @@ class AxsysClientTest {
     fun `NAV-enhet not found`() {
         assertThrows<EnhetNotFoundError> {
             val mockClient = makeMockClient {
-                respond(status = HttpStatusCode.NotFound, content = "")
+                respondError(status = HttpStatusCode.NotFound)
             }
             val client = AxsysClient(httpClient = mockClient, axsysUrl = "http://example")
             runBlocking { client.hentAnsattIdenter("1234") }
