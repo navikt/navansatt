@@ -37,6 +37,7 @@ fun main() {
                 ignoreUnknownKeys = true
             })
         }
+        install(ClientCallLogging)
     }
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
         mainModule(
