@@ -1,23 +1,21 @@
 package no.nav.navansatt.mock
 
-import io.ktor.application.install
-import io.ktor.features.ContentNegotiation
-import io.ktor.routing.routing
-import io.ktor.serialization.json
+import io.ktor.server.application.install
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
+import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.routing.routing
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class MockServer(val port: Int) {
+class MockServer(private val port: Int) {
     companion object {
-        val LOG = LoggerFactory.getLogger(MockServer::class.java)
+        val LOG: Logger = LoggerFactory.getLogger(MockServer::class.java)
     }
 
     val server = run {
         embeddedServer(Netty, port = port) {
-            install(ContentNegotiation) {
-                json()
-            }
+            install(ContentNegotiation)
             routing {
                 oidcMocks()
                 axsysMock()
