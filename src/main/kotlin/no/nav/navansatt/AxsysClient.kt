@@ -11,6 +11,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
+import java.util.UUID
 
 @Serializable
 data class TilgangResponse(
@@ -44,8 +45,7 @@ class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     }
 
     suspend fun hentTilganger(ident: String): TilgangResponse {
-        val httpResponse = httpClient.get {
-            url("$axsysUrl/api/v1/tilgang/$ident?inkluderAlleEnheter=false")
+        val httpResponse = httpClient.get("$axsysUrl/api/v1/tilgang/$ident?inkluderAlleEnheter=false") {
             axsysHeaders()
         }
 
@@ -61,8 +61,7 @@ class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     }
 
     suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
-        val httpResponse = httpClient.get {
-            url("$axsysUrl/api/v1/enhet/$enhetId/brukere")
+        val httpResponse = httpClient.get("$axsysUrl/api/v1/enhet/$enhetId/brukere") {
             axsysHeaders()
         }
 
