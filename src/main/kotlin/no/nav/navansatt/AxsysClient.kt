@@ -1,14 +1,12 @@
 package no.nav.navansatt
 
 import io.ktor.client.HttpClient
-import io.ktor.client.call.body
+import io.ktor.client.features.ResponseException
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.url
-import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode
-import io.ktor.http.isSuccess
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 
@@ -44,34 +42,34 @@ class AxsysClient(val httpClient: HttpClient, val axsysUrl: String) {
     }
 
     suspend fun hentTilganger(ident: String): TilgangResponse {
-        val httpResponse = httpClient.get {
-            url("$axsysUrl/api/v1/tilgang/$ident?inkluderAlleEnheter=false")
-            axsysHeaders()
-        }
-
-        if (httpResponse.status.isSuccess()) {
-            return httpResponse.body()
-        } else if (httpResponse.status == HttpStatusCode.NotFound) {
-            throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
-        } else {
-            LOG.error("Kunne ikke hente tilganger for NAV-ansatt $ident", httpResponse.bodyAsText())
-            throw IllegalArgumentException("Kunne ikke hente tilganger for NAV-ansatt med id $ident")
+        try {
+            return httpClient.get {
+                url(axsysUrl + "/api/v1/tilgang/" + ident + "?inkluderAlleEnheter=false")
+                axsysHeaders()
+            }
+        } catch (e: ResponseException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                throw NAVAnsattNotFoundError("Fant ikke NAV-ansatt med id $ident")
+            } else {
+                LOG.error("Kunne ikke hente tilganger for NAV-ansatt $ident", e)
+                throw e
+            }
         }
     }
 
     suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
-        val httpResponse = httpClient.get {
-            url("$axsysUrl/api/v1/enhet/$enhetId/brukere")
-            axsysHeaders()
-        }
-
-        if (httpResponse.status.isSuccess()) {
-            return httpResponse.body()
-        } else if (httpResponse.status == HttpStatusCode.NotFound) {
-            throw EnhetNotFoundError("Fant ikke NAV-enhet med id $enhetId")
-        } else {
-            LOG.error("Kunne ikke hente identer for NAV-enhet $enhetId", httpResponse.bodyAsText())
-            throw IllegalArgumentException("Kunne ikke hente identer for NAV-enhet $enhetId")
+        try {
+            return httpClient.get {
+                url(axsysUrl + "/api/v1/enhet/$enhetId/brukere")
+                axsysHeaders()
+            }
+        } catch (e: ResponseException) {
+            if (e.response.status == HttpStatusCode.NotFound) {
+                throw EnhetNotFoundError("Fant ikke NAV-enhet med id $enhetId")
+            } else {
+                LOG.error("Kunne ikke hente identer for NAV-enhet $enhetId", e)
+                throw e
+            }
         }
     }
 }

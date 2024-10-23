@@ -10,8 +10,8 @@
     <description>REST service for getting data about employees/NAV-ansatte</description>
 
     <properties>
-        <kotlin.version>2.0.20</kotlin.version>
-        <ktor.version>2.3.12</ktor.version>
+        <kotlin.version>1.4.21</kotlin.version>
+        <ktor.version>1.5.1</ktor.version>
         <serialization.version>1.0.1</serialization.version>
     </properties>
 
@@ -49,10 +49,6 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-core-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
             <artifactId>ktor-server-core</artifactId>
         </dependency>
         <dependency>
@@ -61,47 +57,27 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-host-common-jvm</artifactId>
+            <artifactId>ktor-server-netty</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-netty-jvm</artifactId>
+            <artifactId>ktor-locations</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-locations-jvm</artifactId>
+            <artifactId>ktor-auth</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-auth-jvm</artifactId>
+            <artifactId>ktor-auth-jwt</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-auth-jwt-jvm</artifactId>
+            <artifactId>ktor-serialization</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-call-id-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-content-negotiation-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-status-pages-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-serialization-kotlinx-json-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-client-apache-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-client-content-negotiation-jvm</artifactId>
+            <artifactId>ktor-client-apache</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
@@ -109,7 +85,7 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-metrics-micrometer-jvm</artifactId>
+            <artifactId>ktor-metrics-micrometer</artifactId>
         </dependency>
 
 
@@ -151,13 +127,13 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.13.5</version>
+            <version>1.1.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-text</artifactId>
-            <version>1.11.0</version>
+            <version>1.10.0</version>
         </dependency>
 
 
@@ -165,7 +141,7 @@
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.4.12</version>
+            <version>1.2.3</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -175,7 +151,7 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.12</version>
+            <version>1.7.30</version>
         </dependency>
 
         <!-- Test scope -->
@@ -187,8 +163,8 @@
         </dependency>
         <dependency>
             <groupId>io.mockk</groupId>
-            <artifactId>mockk-jvm</artifactId>
-            <version>1.13.12</version>
+            <artifactId>mockk</artifactId>
+            <version>1.10.5</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -203,7 +179,7 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-tests-jvm</artifactId>
+            <artifactId>ktor-server-tests</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -226,12 +202,12 @@
             <plugin>
                 <groupId>com.github.gantsign.maven</groupId>
                 <artifactId>ktlint-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>1.7.0</version>
                 <executions>
                     <execution>
                         <id>check-kotlin-code</id>
                         <goals>
-<!--                            <goal>check</goal>-->
+                            <goal>check</goal>
                         </goals>
                         <!--
                          Unable to get plugin to exclude generated sources (using sourcesExcludes),
@@ -262,7 +238,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <jvmTarget>21</jvmTarget>
+                    <jvmTarget>14</jvmTarget>
                     <compilerPlugins>
                         <plugin>kotlinx-serialization</plugin>
                     </compilerPlugins>
@@ -305,11 +281,4 @@
             </plugin>
         </plugins>
     </build>
-    <repositories>
-        <repository>
-            <id>maven_central</id>
-            <name>Maven Central</name>
-            <url>https://repo.maven.apache.org/maven2/</url>
-        </repository>
-    </repositories>
 </project>

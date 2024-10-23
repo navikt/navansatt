@@ -1,10 +1,10 @@
 package no.nav.navansatt.mock
 
+import io.ktor.application.call
 import io.ktor.http.ContentType
-import io.ktor.server.application.call
-import io.ktor.server.response.respondText
-import io.ktor.server.routing.Routing
-import io.ktor.server.routing.get
+import io.ktor.response.respondText
+import io.ktor.routing.Routing
+import io.ktor.routing.get
 
 fun Routing.oidcMocks() {
     get("/rest/AzureAd/123456/v2.0/.well-known/openid-configuration") {

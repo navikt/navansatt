@@ -2,9 +2,9 @@ package no.nav.navansatt
 
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.apache.Apache
-import io.ktor.client.plugins.cache.HttpCache
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
+import io.ktor.client.features.cache.HttpCache
+import io.ktor.client.features.json.JsonFeature
+import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.server.engine.embeddedServer
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -32,10 +32,12 @@ fun main() {
             }
         }
         install(HttpCache)
-        install(ContentNegotiation) {
-            json(Json {
-                ignoreUnknownKeys = true
-            })
+        install(JsonFeature) {
+            serializer = KotlinxSerializer(
+                Json {
+                    ignoreUnknownKeys = true
+                }
+            )
         }
     }
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
