@@ -1,0 +1,30 @@
+name: Deploy image
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Hvilket image som skal deployes (f. eks. 94c89dde568e8239329205a83d4aee32ea23fb79)"
+        required: true
+      deployenv:
+        type: choice
+        description: "Hvilket miljø det skal deployes til"
+        options:
+          - dev
+          - prod
+
+jobs:
+  deploy:
+    permissions:
+      contents: "read"
+      id-token: "write"  
+    name: Deploy to NAIS
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: nais/deploy/actions/deploy@v2
+        name: Deploy to ${{ inputs.deployenv }}
+        env:
+          CLUSTER: ${{ inputs.deployenv }}-fss
+          RESOURCE: nais/nais-${{ inputs.deployenv }}.yml
+          VAR: image=${{ inputs.version }}
