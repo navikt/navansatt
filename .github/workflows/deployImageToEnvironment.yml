@@ -27,4 +27,4 @@ jobs:
         env:
           CLUSTER: ${{ inputs.deployenv }}-fss
           RESOURCE: nais/nais-${{ inputs.deployenv }}.yml
-          VAR: image=${{ inputs.version }}
+          VAR: image=docker.pkg.github.com/${{ github.repository }}/navansatt:${{ inputs.version }}
