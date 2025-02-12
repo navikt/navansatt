@@ -1,5 +1,4 @@
-# FROM navikt/java:14
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
 RUN apt-get update && apt-get install -y \
   curl \
