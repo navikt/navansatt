@@ -69,7 +69,7 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-server-locations-jvm</artifactId>
+            <artifactId>ktor-server-resources-jvm</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
