@@ -5,9 +5,8 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.http.HttpStatusCode.Companion.OK
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.locations.KtorExperimentalLocationsAPI
-import io.ktor.server.locations.Locations
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.server.resources.*
 import io.ktor.server.testing.ApplicationTestBuilder
 import io.ktor.server.testing.testApplication
 import io.mockk.coEvery
@@ -321,14 +320,13 @@ class RoutesTest {
         }
     }
 
-    @OptIn(KtorExperimentalLocationsAPI::class)
     private fun withMockApp(
         activeDirectoryClient: ActiveDirectoryClient,
         axsysClient: AxsysClient,
         norg2Client: Norg2Client,
         testCode: suspend ApplicationTestBuilder.() -> Unit,
     ) = testApplication {
-        install(Locations)
+        install(Resources)
         install(ContentNegotiation) {
             json()
         }

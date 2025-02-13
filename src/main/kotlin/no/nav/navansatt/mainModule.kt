@@ -4,6 +4,7 @@ import com.auth0.jwk.GuavaCachedJwkProvider
 import com.auth0.jwk.UrlJwkProvider
 import io.ktor.client.HttpClient
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.resources.*
 import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
@@ -11,8 +12,6 @@ import io.ktor.server.application.log
 import io.ktor.server.auth.Authentication
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
-import io.ktor.server.locations.KtorExperimentalLocationsAPI
-import io.ktor.server.locations.Locations
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
@@ -34,7 +33,6 @@ import java.net.URL
 import java.util.Locale
 import java.util.UUID
 
-@OptIn(KtorExperimentalLocationsAPI::class)
 fun Application.mainModule(
     config: ApplicationConfig,
     httpClient: HttpClient,
@@ -74,7 +72,7 @@ fun Application.mainModule(
         retrieveFromHeader("correlationId")
         generate { UUID.randomUUID().toString() }
     }
-    install(Locations)
+    install(Resources)
     install(ContentNegotiation) {
         json()
     }

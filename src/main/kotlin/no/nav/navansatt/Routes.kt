@@ -3,11 +3,10 @@ package no.nav.navansatt
 import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
+import io.ktor.resources.*
+import io.ktor.server.resources.*
 import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
-import io.ktor.server.locations.KtorExperimentalLocationsAPI
-import io.ktor.server.locations.Location
-import io.ktor.server.locations.get
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
@@ -40,7 +39,6 @@ data class Fagomrade(
 )
 
 @OptIn(InternalAPI::class)
-@KtorExperimentalLocationsAPI
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,
@@ -50,7 +48,7 @@ fun Route.authenticatedRoutes(
         call.respond("OK")
     }
 
-    @Location("/navansatt/{ident}")
+    @Resource("/navansatt/{ident}")
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
         val result = activeDirectoryClient.getUser(location.ident)
@@ -75,7 +73,7 @@ fun Route.authenticatedRoutes(
         }
     }
 
-    @Location("/navansatt/{ident}/fagomrader")
+    @Resource("/navansatt/{ident}/fagomrader")
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
@@ -94,7 +92,7 @@ fun Route.authenticatedRoutes(
         }
     }
 
-    @Location("/navansatt/{ident}/enheter")
+    @Resource("/navansatt/{ident}/enheter")
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
@@ -135,7 +133,7 @@ fun Route.authenticatedRoutes(
         }
     }
 
-    @Location("/enhet/{enhetId}/navansatte")
+    @Resource("/enhet/{enhetId}/navansatte")
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
@@ -165,7 +163,6 @@ fun Route.authenticatedRoutes(
     }
 }
 
-@OptIn(KtorExperimentalLocationsAPI::class)
 fun Routing.routes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
