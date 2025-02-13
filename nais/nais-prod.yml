@@ -65,7 +65,7 @@ spec:
     - name: "LDAP_BASE"
       value: "dc=adeo,dc=no"
     - name: "AXSYS_URL"
-      value: "https://axsys.intern.nav.no/"
+      value: "https://axsys.intern.nav.no"
     - name: "NORG2_URL"
       value: "https://norg2.intern.nav.no/norg2"
     - name: "STS_WELL_KNOWN_URL"
