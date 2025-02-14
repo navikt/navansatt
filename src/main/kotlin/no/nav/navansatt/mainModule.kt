@@ -15,11 +15,10 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
-import io.ktor.server.plugins.callloging.CallLogging
+import io.ktor.server.plugins.callloging.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.request.header
-import io.ktor.server.request.path
+import io.ktor.server.request.*
 import io.ktor.server.response.respond
 import io.ktor.server.routing.routing
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics
@@ -67,6 +66,13 @@ fun Application.mainModule(
         level = Level.INFO
         filter { call -> !call.request.path().matches(Regex(".*/isready|.*/isalive|.*/metrics")) }
         callIdMdc("correlationId")
+        format { call ->
+            val status = call.response.status()
+            val uri = call.request.uri
+            val httpMethod = call.request.httpMethod.value
+            val processingTime = call.processingTimeMillis()
+            "$status: $httpMethod - $uri in $processingTime ms"
+        }
     }
     install(CallId) {
         retrieveFromHeader("correlationId")
