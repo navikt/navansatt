@@ -1,10 +1,10 @@
-name: Build, push, and deploy
+name: Build feature-branch
 
 on:
   push:
-    branches:
-      - !main
-      - !sandbox
+    branches-ignore:
+      - main
+      - sandbox
 
 jobs:
   build:
