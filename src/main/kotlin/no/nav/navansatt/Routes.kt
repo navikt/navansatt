@@ -37,7 +37,7 @@ data class Fagomrade(
     val kode: String,
 )
 
-@OptIn(InternalAPI::class, InternalAPI::class)
+@OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,
@@ -187,7 +187,7 @@ fun Routing.routes(
         )
     }
 
-    authenticate("azure", "sts") {
+    authenticate("azure") {
         authenticatedRoutes(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = axsysClient,
