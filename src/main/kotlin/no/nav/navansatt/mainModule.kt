@@ -15,7 +15,7 @@ import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
 import io.ktor.server.plugins.callid.CallId
 import io.ktor.server.plugins.callid.callIdMdc
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.statuspages.StatusPages
 import io.ktor.server.request.*
@@ -28,7 +28,7 @@ import io.micrometer.prometheusmetrics.PrometheusConfig
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.coroutines.runBlocking
 import org.slf4j.event.Level
-import java.net.URL
+import java.net.URI
 import java.util.Locale
 import java.util.UUID
 
@@ -119,7 +119,7 @@ fun Application.mainModule(
     install(Authentication) {
         jwt("azure") {
             verifier(
-                GuavaCachedJwkProvider(UrlJwkProvider(URL(azureOidc.jwks_uri))),
+                GuavaCachedJwkProvider(UrlJwkProvider(URI(azureOidc.jwks_uri).toURL())),
                 azureOidc.issuer,
             ) {
                 config.azureClientId?.also { withAudience(it) }
@@ -129,7 +129,7 @@ fun Application.mainModule(
 
         jwt("sts") {
             verifier(
-                GuavaCachedJwkProvider(UrlJwkProvider(URL(stsOidc.jwks_uri))),
+                GuavaCachedJwkProvider(UrlJwkProvider(URI(stsOidc.jwks_uri).toURL())),
                 stsOidc.issuer,
             )
             validate { credential -> JWTPrincipal(credential.payload) }
