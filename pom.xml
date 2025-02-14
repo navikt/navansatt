@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
-                <version>1.37.0</version>
+                <version>1.47.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -97,6 +97,10 @@
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-client-apache-jvm</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.ktor</groupId>
+            <artifactId>ktor-client-apache5-jvm</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>

@@ -1,7 +1,7 @@
 package no.nav.navansatt
 
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.apache.Apache
+import io.ktor.client.engine.apache5.*
 import io.ktor.client.plugins.cache.HttpCache
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -23,10 +23,13 @@ fun main() {
         username = config.adUsername,
         password = config.adPassword
     )
-    val httpClient = HttpClient(Apache) {
+    val httpClient = HttpClient(Apache5) {
         engine {
             sslContext = SSLContexts.createSystemDefault()
             connectTimeout = 2
+            socketTimeout = 5_000
+            connectTimeout = 5_000
+            connectionRequestTimeout = 10_000
             customizeClient {
                 useSystemProperties()
             }
