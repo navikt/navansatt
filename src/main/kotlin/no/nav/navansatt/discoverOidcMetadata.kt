@@ -3,7 +3,6 @@ package no.nav.navansatt
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import io.ktor.client.request.url
 import kotlinx.serialization.Serializable
 import org.slf4j.LoggerFactory
 
@@ -21,9 +20,8 @@ suspend fun discoverOidcMetadata(
 ): OIDCMetadata {
     try {
         val meta = httpClient
-            .get {
-                url(wellknownUrl)
-            }.body<OIDCMetadata>()
+            .get(wellknownUrl)
+            .body<OIDCMetadata>()
         LOG.info("Discovered issuer ${meta.issuer} with JWKS URI ${meta.jwks_uri} (from OIDC endpoint $wellknownUrl)")
         return meta
     } catch (err: Exception) {

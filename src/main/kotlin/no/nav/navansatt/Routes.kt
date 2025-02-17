@@ -5,13 +5,12 @@ import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
 import io.ktor.server.resources.*
-import io.ktor.server.application.call
 import io.ktor.server.auth.authenticate
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.Routing
-import io.ktor.util.InternalAPI
+import io.ktor.utils.io.*
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
 import io.ktor.server.routing.get as simpleGet
@@ -127,7 +126,7 @@ fun Route.authenticatedRoutes(
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Feil i request for ${location.ident} melding ${error.response.content} status ${error.response}",
+                    message = "Feil i request for ${location.ident} melding ${error.response.rawContent} status ${error.response}",
                 )
             )
         }
