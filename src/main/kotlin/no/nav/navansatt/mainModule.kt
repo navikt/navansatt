@@ -9,7 +9,7 @@ import io.ktor.serialization.kotlinx.json.json
 import io.ktor.server.application.Application
 import io.ktor.server.application.install
 import io.ktor.server.application.log
-import io.ktor.server.auth.Authentication
+import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.jwt.jwt
 import io.ktor.server.metrics.micrometer.MicrometerMetrics
@@ -66,6 +66,10 @@ fun Application.mainModule(
         level = Level.INFO
         filter { call -> !call.request.path().matches(Regex(".*/isready|.*/isalive|.*/metrics")) }
         callIdMdc("correlationId")
+        mdc("azp_name") { call ->
+            val principal = call.principal<JWTPrincipal>()
+            principal?.getClaim("azp_name", String::class)
+        }
         format { call ->
             val status = call.response.status()
             val uri = call.request.uri
