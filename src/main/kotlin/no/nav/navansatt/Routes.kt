@@ -187,7 +187,7 @@ fun Routing.routes(
         )
     }
 
-    authenticate("azure") {
+    authenticate("azure", "sts") {
         authenticatedRoutes(
             activeDirectoryClient = activeDirectoryClient,
             axsysClient = axsysClient,
