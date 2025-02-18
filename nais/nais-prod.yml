@@ -9,7 +9,7 @@ spec:
   image: "{{{ image }}}"
   port: 7000
   replicas:
-    min: 4
+    min: 2
     max: 8
   liveness:
     path: "/internal/isalive"
