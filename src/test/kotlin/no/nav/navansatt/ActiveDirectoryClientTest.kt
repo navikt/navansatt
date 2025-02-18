@@ -30,7 +30,7 @@ class ActiveDirectoryClientTest {
             // Wait for the LDAP server to boot
             Thread.sleep(1500)
 
-            val activeDirectoryClient = ActiveDirectoryClient(
+            val activeDirectoryClient = DefaultActiveDirectoryClient(
                 url = "ldap://localhost:$freePort",
                 base = "DC=test,DC=local",
                 username = "",

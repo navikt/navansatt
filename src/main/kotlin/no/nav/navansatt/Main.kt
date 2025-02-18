@@ -17,12 +17,12 @@ data class ApiError(
 
 fun main() {
     val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
-    val activeDirectoryClient = ActiveDirectoryClient(
+    val activeDirectoryClient: ActiveDirectoryClient = CachedActiveDirectoryClient(DefaultActiveDirectoryClient(
         url = config.adUrl,
         base = config.adBase,
         username = config.adUsername,
         password = config.adPassword
-    )
+    ))
     val httpClient = HttpClient(Apache5) {
         engine {
             sslContext = SSLContexts.createSystemDefault()
