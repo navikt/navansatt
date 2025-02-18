@@ -1,13 +1,16 @@
 package no.nav.navansatt
 
+import com.github.benmanes.caffeine.cache.*
+import dev.hsbrysk.caffeine.CoroutineLoadingCache
+import dev.hsbrysk.caffeine.buildCoroutine
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
-import java.util.Hashtable
-import java.util.Locale
+import java.time.Duration
+import java.util.*
 import java.util.regex.Pattern
 import javax.naming.Context
 import javax.naming.NamingEnumeration
@@ -16,6 +19,7 @@ import javax.naming.directory.BasicAttribute
 import javax.naming.directory.BasicAttributes
 import javax.naming.directory.SearchControls
 import javax.naming.ldap.InitialLdapContext
+
 
 data class User(
     val ident: String,
@@ -26,12 +30,17 @@ data class User(
     val groups: List<String>,
 )
 
-class ActiveDirectoryClient(
+interface ActiveDirectoryClient {
+    suspend fun getUsers(idents: List<String>): List<User>
+    suspend fun getUser(ident: String): User?
+}
+
+class DefaultActiveDirectoryClient(
     val url: String,
     val base: String,
     val username: String,
     val password: String?,
-) {
+): ActiveDirectoryClient {
     companion object {
         private val LOG = LoggerFactory.getLogger(ActiveDirectoryClient::class.java)
     }
@@ -46,7 +55,7 @@ class ActiveDirectoryClient(
     }
 
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUsers(idents: List<String>): List<User> = withContext(Dispatchers.IO) {
+    override suspend fun getUsers(idents: List<String>): List<User> = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val filter = (0..(idents.size - 1)).map {
@@ -95,7 +104,7 @@ class ActiveDirectoryClient(
     }
 
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
+    override suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val attrs = BasicAttributes().apply {
@@ -178,5 +187,30 @@ class ActiveDirectoryClient(
         }
         LOG.warn("Malformed response from LDAP server: \"$fullGroupName\" is not a valid LDAP group format. Expected format \"CN=thegroupname, OU=AccountGroups, OU=Groups, OU=NAV etc...\"")
         return null
+    }
+}
+
+class CachedActiveDirectoryClient(
+    private val activeDirectoryClient: ActiveDirectoryClient
+) : ActiveDirectoryClient {
+
+    private val usersByIdents: CoroutineLoadingCache<List<String>, List<User>> = Caffeine.newBuilder()
+        .maximumSize(100)
+        .expireAfterWrite(Duration.ofMinutes(60))
+        .refreshAfterWrite(Duration.ofMinutes(60))
+        .buildCoroutine() { key -> activeDirectoryClient.getUsers(key) }
+
+    private val userByIdent: CoroutineLoadingCache<String, User?> = Caffeine.newBuilder()
+        .maximumSize(1000)
+        .expireAfterWrite(Duration.ofMinutes(60))
+        .refreshAfterWrite(Duration.ofMinutes(60))
+        .buildCoroutine() { key -> activeDirectoryClient.getUser(key) }
+
+    override suspend fun getUsers(idents: List<String>): List<User> {
+        return usersByIdents.get(idents.sorted())
+    }
+
+    override suspend fun getUser(ident: String): User? {
+        return userByIdent.get(ident)
     }
 }
