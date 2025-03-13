@@ -25,6 +25,16 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           team: teampensjon
 
+      - name: Docker meta
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.login.outputs.registry }}/${{ github.repository }}/${{ github.repository_owner}}
+          tags: |
+            type=sha,prefix=${{ steps.version.outputs.time }}-,priority=9002
+
       - name: Build and push
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: build_push
