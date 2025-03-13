@@ -3,18 +3,25 @@ name: Build and deploy main branch to dev
 on: workflow_dispatch
 
 jobs:
-  build_and_deploy_to_dev:
-    name: Build, push and deploy to dev-fss
+  build:
+    permissions:
+      packages: write
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     outputs:
       image: "${{ steps.set-outputs.outputs.IMAGE }}"
-    permissions:
-      contents: read
-      checks: write
-      id-token: write
-      packages: write
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set version
+        id: version
+        shell: bash
+        run: |
+          TIME=$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M)
+          COMMIT=$(git rev-parse --short=12 HEAD)
+          echo "TIME=$TIME" >> $GITHUB_OUTPUT
+          echo "VERSION=$TIME-$COMMIT" >> $GITHUB_OUTPUT
 
       - name: NAIS login
         if: ${{ github.actor != 'dependabot[bot]' }}
@@ -51,10 +58,19 @@ jobs:
         run: |
           echo "IMAGE=${{ fromJSON(steps.meta.outputs.json).tags[0] }}" >> $GITHUB_OUTPUT
 
-      - name: Deploy Navansatt to nais
-        uses: nais/deploy/actions/deploy@v2
+  deploy:
+    permissions:
+      contents: "read"
+      id-token: "write"
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: 'ubuntu-latest'
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: nais/deploy/actions/deploy@v2
+        name: 'Deploy to NAIS Dev'
         env:
-          CLUSTER: dev-fss
-          RESOURCE: .nais/nais-dev.yml
           IMAGE: "${{ needs.build.outputs.image }}"
-          TELEMETRY: ${{ steps.docker-build-push.outputs.telemetry }}
+          RESOURCE: .nais/nais-dev.yml
+          CLUSTER: 'dev-fss'
