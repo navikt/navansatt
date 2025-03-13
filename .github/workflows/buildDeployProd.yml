@@ -1,0 +1,27 @@
+name: Build and deploy main branch
+
+on: workflow_dispatch
+
+jobs:
+  build_and_deploy_to_prod:
+    name: Build, push and deploy to prod-fss
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
+      id-token: write
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and push navansatt image
+        uses: nais/docker-build-push@v0
+        id: docker-build-push
+        with:
+          team: pensjondeployer
+      - name: Deploy Navansatt to nais
+        uses: nais/deploy/actions/deploy@v2
+        env:
+          CLUSTER: prod-fss
+          RESOURCE: .nais/nais-dev.yml
+          VAR: image=${{ steps.docker-build-push.outputs.image }}
+          TELEMETRY: ${{ steps.docker-build-push.outputs.telemetry }}
