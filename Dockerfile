@@ -14,7 +14,7 @@ ENV LOGGING_CONFIG=classpath:logback-nais.xml
 
 COPY java-opts.sh .
 
-COPY target/*.jar app.jar
+COPY target/navansatt-1-SNAPSHOT-jar-with-dependencies.jar app.jar
 
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["bash", "-c", "source java-opts.sh && exec java ${DEFAULT_JVM_OPTS} ${JAVA_OPTS} -jar app.jar $@"]
+CMD ["bash", "-c", "source java-opts.sh && exec java ${DEFAULT_JVM_OPTS} ${JAVA_OPTS} -jar app.jar ${RUNTIME_OPTS} $@"]
