@@ -75,5 +75,5 @@ jobs:
         name: 'Deploy to NAIS Dev'
         env:
           IMAGE: "${{ needs.build.outputs.image }}"
-          RESOURCE: .nais/nais-dev.yml
+          RESOURCE: nais/nais-dev.yml
           CLUSTER: 'dev-fss'
