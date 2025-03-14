@@ -42,6 +42,9 @@ jobs:
           tags: |
             type=sha,prefix=${{ steps.version.outputs.time }}-,priority=9002
 
+      - name: Build jar with Maven
+        run: mvn clean package -DskipTests
+
       - name: Build and push
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: build_push
