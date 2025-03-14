@@ -1,6 +1,9 @@
 name: Build and deploy main branch to dev
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -13,6 +16,12 @@ jobs:
       image: "${{ steps.set-outputs.outputs.IMAGE }}"
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2
+          key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
       - name: Set version
         id: version
@@ -66,7 +75,7 @@ jobs:
       contents: "read"
       id-token: "write"
     if: github.ref == 'refs/heads/main'
-    needs: [build]
+    needs: [ build ]
     runs-on: 'ubuntu-latest'
 
     steps:

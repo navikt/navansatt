@@ -1,22 +1,19 @@
-name: Build+deploy sandbox
+name: Build and deploy main branch to dev
 
 on:
   push:
     branches:
-      - sandbox
-
-env:
-  docker_image: docker.pkg.github.com/${{ github.repository }}/navansatt:${{ github.sha }}
+     - sandbox
 
 jobs:
   build:
-    name: Build and push Docker container
     permissions:
-      contents: "read"
-      checks: "write"
-      id-token: "write"
-      packages: "write"
+      packages: write
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
+    outputs:
+      image: "${{ steps.set-outputs.outputs.IMAGE }}"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
@@ -25,35 +22,67 @@ jobs:
           key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
           restore-keys: |
             ${{ runner.os }}-maven-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: 21
-      - name: Build
+
+      - name: Set version
+        id: version
         shell: bash
         run: |
-          mvn clean install
-      - name: Build and publish Docker image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TIME=$(TZ="Europe/Oslo" date +%Y.%m.%d-%H.%M)
+          COMMIT=$(git rev-parse --short=12 HEAD)
+          echo "TIME=$TIME" >> $GITHUB_OUTPUT
+          echo "VERSION=$TIME-$COMMIT" >> $GITHUB_OUTPUT
+
+      - name: NAIS login
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        uses: nais/login@v0
+        id: login
+        with:
+          project_id: ${{ vars.NAIS_MANAGEMENT_PROJECT_ID }}
+          identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
+          team: teampensjon
+
+      - name: Docker meta
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.login.outputs.registry }}/${{ github.repository }}/${{ github.repository_owner}}
+          tags: |
+            type=sha,prefix=${{ steps.version.outputs.time }}-,priority=9002
+
+      - name: Build jar with Maven
+        run: mvn clean package -DskipTests
+
+      - name: Build and push
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        id: build_push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+
+      - name: Set outputs
+        if: ${{ github.actor != 'dependabot[bot]' }}
+        shell: bash
+        id: set-outputs
         run: |
-          docker build --tag ${docker_image} .
-          docker login docker.pkg.github.com -u ${GITHUB_REPOSITORY} -p ${GITHUB_TOKEN}
-          docker push ${docker_image}
+          echo "IMAGE=${{ fromJSON(steps.meta.outputs.json).tags[0] }}" >> $GITHUB_OUTPUT
 
   deploy:
-    name: Deploy to NAIS
     permissions:
       contents: "read"
       id-token: "write"
-    needs: build
-    if: github.ref == 'refs/heads/sandbox'
-    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: 'ubuntu-latest'
+
     steps:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
-        name: Dev deploy
+        name: 'Deploy to NAIS Dev'
         env:
-          CLUSTER: dev-fss
+          IMAGE: "${{ needs.build.outputs.image }}"
           RESOURCE: nais/nais-dev.yml
-          VAR: image=${{ env.docker_image }}
+          CLUSTER: 'dev-fss'
