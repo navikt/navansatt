@@ -78,11 +78,23 @@ jobs:
     needs: [ build ]
     runs-on: 'ubuntu-latest'
 
+    strategy:
+      matrix:
+        include:
+          - name: navansatt
+            cluster: dev-fss
+            vars: nais/vars-dev.yaml
+
+#          - name: navansatt
+#            cluster: prod-fss
+#            vars: nais/vars-prod.yaml
+
     steps:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
         name: 'Deploy to NAIS Dev'
         env:
           IMAGE: "${{ needs.build.outputs.image }}"
-          RESOURCE: nais/nais-dev.yml
-          CLUSTER: 'dev-fss'
+          RESOURCE: nais/nais.yaml
+          CLUSTER: ${{matrix.cluster}}
+          VARS: ${{matrix.vars}}
