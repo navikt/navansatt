@@ -1,36 +1,12 @@
-apiVersion: "nais.io/v1alpha1"
-kind: "Application"
-metadata:
-  name: "navansatt"
-  namespace: "teampensjon"
-  labels:
-    team: "teampensjon"
-spec:
-  image: "{{{ image }}}"
-  port: 7000
-  replicas:
-    min: 2
-    max: 4
-  liveness:
-    path: "/internal/isalive"
-    initialDelay: 3
-    timeout: 1
-  readiness:
-    path: "/internal/isready"
-    initialDelay: 3
-    timeout: 1
-  resources:
-    limits:
-      memory: "1024Mi"
-    requests:
-      memory: "512Mi"
-  prometheus:
-    enabled: true
-    path: "/internal/metrics"
+app:
+  name: 'navansatt'
+  namespace: 'pensjondeployer'
+  team: 'pensjondeployer'
   ingresses:
     - "https://navansatt.dev.adeo.no"
     - "https://navansatt.dev.intern.nav.no"
     - "https://navansatt.dev-fss-pub.nais.io"
+
   accessPolicy:
     inbound:
       rules:
@@ -91,19 +67,11 @@ spec:
         - application: skribenten-backend-lokal
           namespace: pensjonsbrev
           cluster: dev-gcp
-  azure:
-    application:
-      enabled: true
-      tenant: trygdeetaten.no
-      allowAllUsers: true
-  webproxy: true
-  # TODO: Enable observability when it's supported in dev-fss
-  # For now, this is set up manually.
-  # observability:
-  #   autoInstrumentation:
-  #     enabled: true
-  #     runtime: sdk
-  env:
+
+azure:
+  tenant: trygdeetaten.no
+
+  env_variables:
     - name: "LDAP_URL"
       value: "ldaps://ldapgw.preprod.local"
     - name: "LDAP_BASE"
@@ -116,15 +84,6 @@ spec:
       value: "https://security-token-service.nais.preprod.local/.well-known/openid-configuration"
     - name: "OTEL_RESOURCE_ATTRIBUTES"
       value: "deployment.environment.name=q2"
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
-      destinations:
-        - id: grafana-lgtm
-        - id: elastic-apm
-  vault:
-    enabled: true
-    paths:
-      - kvPath: "serviceuser/data/dev/srvssolinux"
-        mountPath: "/secrets/ldap"
+
+vault:
+  kvPath: "serviceuser/data/prod/srvssolinux"
