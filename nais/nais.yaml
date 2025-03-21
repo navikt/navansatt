@@ -46,9 +46,9 @@ spec:
       allowAllUsers: true
   webproxy: true
   env:
-    {{#each azure.env_variables as |env|}}
-       - name: {{env.name}}
-    value: {{env.value}}
+    {{#each env_variables }}
+       - name: {{name}}
+    value: {{value}}
     {{/each}}
   observability:
     autoInstrumentation:
