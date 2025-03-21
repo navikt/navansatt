@@ -28,16 +28,16 @@ spec:
     requests:
       memory: "2048Mi"
   ingresses:
-    {{#each ingresses as |url|}}
-      - {{url}}
-    {{/each}}
+    {{#each app.ingresses as |url|}}
+       - {{url}}
+      {{/each}}
   accessPolicy:
     inbound:
       rules:
-        {{#each accessInboundRules as |rule|}}
-          - application: {{rule.application}}
-            namespace: {{rule.namespace}}
-            cluster: {{rule.cluster}}
+        {{#each app.accessInboundRules as |rule|}}
+           - application: {{rule.application}}
+        namespace: {{rule.namespace}}
+        cluster: {{rule.cluster}}
         {{/each}}
   azure:
     application:
@@ -46,10 +46,10 @@ spec:
       allowAllUsers: true
   webproxy: true
   env:
-    {{#each env_variables }}
-- name: {{@key}}
-  value: {{this}}
-   {{/each}}
+    {{#each azure.env_variables }}
+       - name: {{this.name}}
+    value: {{this.value}}
+    {{/each}}
   observability:
     autoInstrumentation:
       enabled: true
