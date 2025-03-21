@@ -34,10 +34,10 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        {{#each app.accessInboundRules as |rule|}}
-           - application: {{rule.application}}
-        namespace: {{rule.namespace}}
-        cluster: {{rule.cluster}}
+        {{#each accessInboundRules}}
+           - application: {{application}}
+        namespace: {{namespace}}
+        cluster: {{cluster}}
         {{/each}}
   azure:
     application:

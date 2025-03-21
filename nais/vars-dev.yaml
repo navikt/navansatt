@@ -7,64 +7,64 @@ app:
     - "https://navansatt.dev.intern.nav.no"
     - "https://navansatt.dev-fss-pub.nais.io"
 
-  accessInboundRules:
-        - application: pensjon-pen-q0
-          namespace: pensjon-q0
-          cluster: dev-fss
-        - application: pensjon-pen-q1
-          namespace: pensjon-q1
-          cluster: dev-fss
-        - application: pensjon-pen-q2
-          namespace: pensjon-q2
-          cluster: dev-fss
-        - application: pensjon-pen-q5
-          namespace: pensjon-q5
-          cluster: dev-fss
-        - application: pensjon-psak-q0
-          namespace: pensjon-q0
-          cluster: dev-fss
-        - application: pensjon-psak-q1
-          namespace: pensjon-q1
-          cluster: dev-fss
-        - application: pensjon-psak-q2
-          namespace: pensjon-q2
-          cluster: dev-fss
-        - application: pensjon-psak-q5
-          namespace: pensjon-q5
-          cluster: dev-fss
-        - application: pensjon-psak-q0
-          namespace: pensjon-q0
-          cluster: dev-gcp
-        - application: pensjon-psak-q1
-          namespace: pensjon-q1
-          cluster: dev-gcp
-        - application: pensjon-psak-q2
-          namespace: pensjon-q2
-          cluster: dev-gcp
-        - application: pensjon-psak-q5
-          namespace: pensjon-q5
-          cluster: dev-gcp
-        - application: etterlatte-brev-api
-          namespace: etterlatte
-          cluster: dev-gcp
-        - application: etterlatte-behandling
-          namespace: etterlatte
-          cluster: dev-gcp
-        - application: eessi-pensjon-journalforing-q2
-          namespace: eessipensjon
-          cluster: dev-gcp
-        - application: eessi-pensjon-journalforing-q1
-          namespace: eessipensjon
-          cluster: dev-gcp
-        - application: ida
-          namespace: traktor
-          cluster: prod-fss
-        - application: skribenten-backend
-          namespace: pensjonsbrev
-          cluster: dev-gcp
-        - application: skribenten-backend-lokal
-          namespace: pensjonsbrev
-          cluster: dev-gcp
+accessInboundRules:
+  - application: pensjon-pen-q0
+    namespace: pensjon-q0
+    cluster: dev-fss
+  - application: pensjon-pen-q1
+    namespace: pensjon-q1
+    cluster: dev-fss
+  - application: pensjon-pen-q2
+    namespace: pensjon-q2
+    cluster: dev-fss
+  - application: pensjon-pen-q5
+    namespace: pensjon-q5
+    cluster: dev-fss
+  - application: pensjon-psak-q0
+    namespace: pensjon-q0
+    cluster: dev-fss
+  - application: pensjon-psak-q1
+    namespace: pensjon-q1
+    cluster: dev-fss
+  - application: pensjon-psak-q2
+    namespace: pensjon-q2
+    cluster: dev-fss
+  - application: pensjon-psak-q5
+    namespace: pensjon-q5
+    cluster: dev-fss
+  - application: pensjon-psak-q0
+    namespace: pensjon-q0
+    cluster: dev-gcp
+  - application: pensjon-psak-q1
+    namespace: pensjon-q1
+    cluster: dev-gcp
+  - application: pensjon-psak-q2
+    namespace: pensjon-q2
+    cluster: dev-gcp
+  - application: pensjon-psak-q5
+    namespace: pensjon-q5
+    cluster: dev-gcp
+  - application: etterlatte-brev-api
+    namespace: etterlatte
+    cluster: dev-gcp
+  - application: etterlatte-behandling
+    namespace: etterlatte
+    cluster: dev-gcp
+  - application: eessi-pensjon-journalforing-q2
+    namespace: eessipensjon
+    cluster: dev-gcp
+  - application: eessi-pensjon-journalforing-q1
+    namespace: eessipensjon
+    cluster: dev-gcp
+  - application: ida
+    namespace: traktor
+    cluster: prod-fss
+  - application: skribenten-backend
+    namespace: pensjonsbrev
+    cluster: dev-gcp
+  - application: skribenten-backend-lokal
+    namespace: pensjonsbrev
+    cluster: dev-gcp
 
 azure:
   tenant: trygdeetaten.no
