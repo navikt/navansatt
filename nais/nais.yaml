@@ -34,10 +34,10 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        {{#each accessPolicy.inbound.rules as |rule|}}
-          - application: {{rule.application}}
-            namespace: {{rule.namespace}}
-            cluster: {{rule.cluster}}
+        {{#each accessPolicy.inbound.rules}}
+    - application: {{rule.application}}
+      namespace: {{rule.namespace}}
+      cluster: {{rule.cluster}}
         {{/each}}
   azure:
     application:
@@ -47,8 +47,8 @@ spec:
   webproxy: true
   env:
     {{#each env_variables }}
-      - name: {{@key}}
-        value: {{this}}
+- name: {{@key}}
+  value: {{this}}
    {{/each}}
   observability:
     autoInstrumentation:
