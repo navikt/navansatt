@@ -47,8 +47,8 @@ spec:
   webproxy: true
   env:
     {{#each env_variables }}
-       - name: {{name}}
-        value: {{value}}
+    - name: {{name}}
+      value: {{value}}
     {{/each}}
   observability:
     autoInstrumentation:
