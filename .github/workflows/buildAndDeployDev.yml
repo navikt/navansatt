@@ -83,11 +83,6 @@ jobs:
         include:
           - name: navansatt
             cluster: dev-fss
-            vars: nais/vars-dev.yaml
-
-#          - name: navansatt
-#            cluster: prod-fss
-#            vars: nais/vars-prod.yaml
 
     steps:
       - uses: actions/checkout@v4
@@ -95,6 +90,5 @@ jobs:
         name: 'Deploy to NAIS Dev'
         env:
           IMAGE: "${{ needs.build.outputs.image }}"
-          RESOURCE: nais/nais.yaml
+          RESOURCE: nais/nais-dev.yaml
           CLUSTER: ${{matrix.cluster}}
-          VARS: ${{matrix.vars}}
