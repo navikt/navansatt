@@ -36,8 +36,8 @@ spec:
       rules:
         {{#each accessInboundRules}}
         - application: {{application}}
-        namespace: {{namespace}}
-        cluster: {{cluster}}
+          namespace: {{namespace}}
+          cluster: {{cluster}}
         {{/each}}
   azure:
     application:
@@ -48,7 +48,7 @@ spec:
   env:
     {{#each env_variables }}
        - name: {{name}}
-    value: {{value}}
+        value: {{value}}
     {{/each}}
   observability:
     autoInstrumentation:
