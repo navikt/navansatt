@@ -35,7 +35,7 @@ spec:
     inbound:
       rules:
         {{#each accessInboundRules}}
-           - application: {{application}}
+        - application: {{application}}
         namespace: {{namespace}}
         cluster: {{cluster}}
         {{/each}}
