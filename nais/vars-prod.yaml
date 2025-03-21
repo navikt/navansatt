@@ -6,9 +6,7 @@ app:
     - "https://navansatt.intern.nav.no"
     - "https://navansatt.prod-fss-pub.nais.io"
 
-accessPolicy:
-  inbound:
-    rules:
+accessInboundRules:
       - application: pensjon-pen
         namespace: pensjondeployer
       - application: pensjon-psak

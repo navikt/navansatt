@@ -7,9 +7,7 @@ app:
     - "https://navansatt.dev.intern.nav.no"
     - "https://navansatt.dev-fss-pub.nais.io"
 
-  accessPolicy:
-    inbound:
-      rules:
+  accessInboundRules:
         - application: pensjon-pen-q0
           namespace: pensjon-q0
           cluster: dev-fss
