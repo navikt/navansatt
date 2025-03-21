@@ -28,17 +28,11 @@ spec:
     requests:
       memory: "2048Mi"
   ingresses:
-    {{#each app.ingresses as |url|}}
-       - {{url}}
-      {{/each}}
+    - {{ app.ingresses | join: "\n    - " }}
   accessPolicy:
     inbound:
       rules:
-        {{#each app.accessInboundRules as |rule|}}
-           - application: {{rule.application}}
-        namespace: {{rule.namespace}}
-        cluster: {{rule.cluster}}
-        {{/each}}
+        - {{ app.accessInboundRules | join: "\n        - " }}
   azure:
     application:
       enabled: true
@@ -46,10 +40,7 @@ spec:
       allowAllUsers: true
   webproxy: true
   env:
-    {{#each azure.env_variables }}
-       - name: {{this.name}}
-    value: {{this.value}}
-    {{/each}}
+    - {{ azure.env_variables | join: "\n    - " }}
   observability:
     autoInstrumentation:
       enabled: true
