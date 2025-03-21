@@ -29,9 +29,16 @@ spec:
       memory: "2048Mi"
   ingresses:
     {{#each ingresses as |url|}}
-       - {{url}}
-      {{/each}}
-  accessPolicy: {{accessPolicy}}
+      - {{url}}
+    {{/each}}
+  accessPolicy:
+    inbound:
+      rules:
+        {{#each accessPolicy.inbound.rules as |rule|}}
+          - application: {{rule.application}}
+            namespace: {{rule.namespace}}
+            cluster: {{rule.cluster}}
+        {{/each}}
   azure:
     application:
       enabled: true
@@ -40,8 +47,8 @@ spec:
   webproxy: true
   env:
     {{#each env_variables }}
-  - name: {{@key}}
-  value: {{this}}
+      - name: {{@key}}
+        value: {{this}}
    {{/each}}
   observability:
     autoInstrumentation:
