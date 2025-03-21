@@ -34,7 +34,7 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        {{#each accessPolicy.inbound.rules}}
+        {{#each accessPolicy.inbound.rules as |rule|}}
     - application: {{rule.application}}
       namespace: {{rule.namespace}}
       cluster: {{rule.cluster}}
