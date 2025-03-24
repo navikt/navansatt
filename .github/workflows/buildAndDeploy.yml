@@ -1,6 +1,9 @@
-name: Build and deploy main branch to dev
+name: Build and deploy main branch
 
-on: workflow_dispatch
+on:
+  push:
+    branches:
+      - main
 
 jobs:
   build:
@@ -79,13 +82,18 @@ jobs:
       matrix:
         include:
           - name: navansatt
+            cluster: dev-fss
+            resource: nais/nais-dev.yaml
+
+          - name: navansatt
             cluster: prod-fss
+            resource: nais/nais-prod.yaml
 
     steps:
       - uses: actions/checkout@v4
       - uses: nais/deploy/actions/deploy@v2
-        name: 'Deploy to NAIS Dev'
+        name: 'Deploy to NAIS'
         env:
           IMAGE: "${{ needs.build.outputs.image }}"
-          RESOURCE: nais/nais-prod.yaml
+          RESOURCE: ${{matrix.resource}}
           CLUSTER: ${{matrix.cluster}}
