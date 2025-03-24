@@ -85,9 +85,9 @@ jobs:
             cluster: dev-fss
             resource: nais/nais-dev.yaml
 
-          - name: navansatt
-            cluster: prod-fss
-            resource: nais/nais-prod.yaml
+#          - name: navansatt
+#            cluster: prod-fss
+#            resource: nais/nais-prod.yaml
 
     steps:
       - uses: actions/checkout@v4
