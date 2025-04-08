@@ -22,7 +22,8 @@ Respons: (eksempel)
   "navn": "Darth Vader",
   "fornavn": "Darth",
   "etternavn": "Vader",
-  "epost": "darth.vader@hollywood.com"
+  "epost": "darth.vader@hollywood.com",
+  "enhet": "2970"
 }
 ```
 
@@ -72,13 +73,15 @@ Respons: (eksempel)
   "navn": "Darth Vader",
   "fornavn": "Darth",
   "etternavn": "Vader",
-  "epost": "darth.vader@hollywood.com"
+  "epost": "darth.vader@hollywood.com",
+  "enhet": "2970"
 }, {
   "ident": "lukesky",
   "navn": "Luke Skywalker",
   "fornavn": "Luke",
   "etternavn": "Skywalker",
-  "epost": "luke.skywalker@hollywood.com"
+  "epost": "luke.skywalker@hollywood.com",
+  "enhet": "2970"
 }]
 ```
 
