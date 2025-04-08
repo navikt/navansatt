@@ -38,6 +38,7 @@ class RoutesTest {
             firstName = "Luke",
             lastName = "Skywalker",
             email = "luke.skywalker@example.com",
+            streetAddress = "2980",
             groups = emptyList(),
         )
 
@@ -239,6 +240,7 @@ class RoutesTest {
                 firstName = "Luke",
                 lastName = "Skywalker",
                 email = "luke.skywalker@example.com",
+                streetAddress = "2980",
                 groups = emptyList(),
             ),
             User(
@@ -247,6 +249,7 @@ class RoutesTest {
                 firstName = "Darth",
                 lastName = "Vader",
                 email = "darth.vader@example.com",
+                streetAddress = "2980",
                 groups = emptyList(),
             ),
             User(
@@ -255,6 +258,7 @@ class RoutesTest {
                 firstName = "Leia",
                 lastName = "Organa",
                 email = "prinsesse.leia.organa@example.com",
+                streetAddress = "2980",
                 groups = emptyList(),
             )
         )

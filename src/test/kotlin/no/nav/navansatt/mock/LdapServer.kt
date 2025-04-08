@@ -75,6 +75,7 @@ class LdapServer(private val port: Int) {
                 addAttribute("givenname", it.givenname)
                 addAttribute("sn", it.sn)
                 addAttribute("mail", it.mail)
+                addAttribute("streetAddress", it.streetAddress)
                 addAttribute("memberOf", it.memberOf.map { group ->
                     "CN=$group,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,DC=test,DC=local"
                 })

@@ -23,6 +23,7 @@ data class User(
     val firstName: String,
     val lastName: String,
     val email: String,
+    val streetAddress: String?,
     val groups: List<String>,
 )
 
@@ -73,6 +74,7 @@ class ActiveDirectoryClient(
                     firstName = readAttribute(entry.attributes, "givenname"),
                     lastName = readAttribute(entry.attributes, "sn"),
                     email = readEmail(entry.attributes),
+                    streetAddress = readAttribute(entry.attributes, "streetaddress"),
                     groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
                 )
             )
@@ -120,6 +122,7 @@ class ActiveDirectoryClient(
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
                 email = readEmail(entry.attributes),
+                streetAddress = readAttribute(entry.attributes, "streetaddress"),
                 groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
             )
         }
