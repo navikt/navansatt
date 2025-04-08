@@ -7,6 +7,7 @@ data class LdapUser(
     val givenname: String,
     val sn: String,
     val mail: String,
+    val streetAddress: String,
     val memberOf: List<String>
 )
 
@@ -18,6 +19,7 @@ object Users {
         sn = "Saksbehandler",
         displayName = "Sara Saksbehandler",
         mail = "sara.saksbehandler@example.com",
+        streetAddress = "2980",
         memberOf = listOf(
             "0000-GA-INNTK_8-30",
             "0000-GA-INNTK_8-28",
@@ -36,6 +38,7 @@ object Users {
         sn = "Klagebehandler",
         displayName = "Klara Klagebehandler",
         mail = "klara.klagebehandler@example.com",
+        streetAddress = "2980",
         memberOf = listOf(
             "0000-GA-PENSJON_KLAGEBEH",
             "0000-GA-INNTK_FORELDRE",
@@ -51,6 +54,7 @@ object Users {
         sn = "Veileder",
         displayName = "Vegard Veileder",
         mail = "vegard.veileder@example.com",
+        streetAddress = "2980",
         memberOf = listOf(
             "0000-GA-PENSJON_KLAGEBEH",
             "0000-GA-INNTK_FORELDRE",
@@ -66,6 +70,7 @@ object Users {
         sn = "Skywalker",
         displayName = "Luke Skywalker",
         mail = "luke.skywalker@example.com",
+        streetAddress = "2980",
         memberOf = listOf(
             "0000-GA-Pensjon",
             "0000-GA-PENSJON_SAKSBEHANDLER"
@@ -79,6 +84,7 @@ object Users {
         sn = "Organa",
         displayName = "Prinsesse Leia Organa",
         mail = "prinsesse.leia.organa@example.com",
+        streetAddress = "2980",
         memberOf = listOf(
             "0000-GA-Pensjon",
             "0000-GA-PENSJON_SAKSBEHANDLER"

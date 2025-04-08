@@ -46,6 +46,7 @@ class ActiveDirectoryClientTest {
                     firstName = "Luke",
                     lastName = "Skywalker",
                     email = "luke.skywalker@example.com",
+                    streetAddress = "2980",
                     groups = listOf(
                         "0000-GA-Pensjon",
                         "0000-GA-PENSJON_SAKSBEHANDLER"
@@ -68,6 +69,7 @@ class ActiveDirectoryClientTest {
                         firstName = "Luke",
                         lastName = "Skywalker",
                         email = "luke.skywalker@example.com",
+                        streetAddress = "2980",
                         groups = listOf(
                             "0000-GA-Pensjon",
                             "0000-GA-PENSJON_SAKSBEHANDLER"
@@ -79,6 +81,7 @@ class ActiveDirectoryClientTest {
                         firstName = "Prinsesse Leia",
                         lastName = "Organa",
                         email = "prinsesse.leia.organa@example.com",
+                        streetAddress = "2980",
                         groups = listOf(
                             "0000-GA-Pensjon",
                             "0000-GA-PENSJON_SAKSBEHANDLER"
