@@ -56,6 +56,7 @@ class RoutesTest {
                     fornavn = "Luke",
                     etternavn = "Skywalker",
                     epost = "luke.skywalker@example.com",
+                    enhet = "2980",
                     groups = emptyList(),
                 ),
                 Json.decodeFromString(response.bodyAsText()),
@@ -278,6 +279,7 @@ class RoutesTest {
                         fornavn = "Luke",
                         etternavn = "Skywalker",
                         epost = "luke.skywalker@example.com",
+                        enhet = "2980",
                         groups = emptyList(),
                     ),
                     NavAnsattResult(
@@ -286,6 +288,7 @@ class RoutesTest {
                         fornavn = "Darth",
                         etternavn = "Vader",
                         epost = "darth.vader@example.com",
+                        enhet = "2980",
                         groups = emptyList(),
                     ),
                     NavAnsattResult(
@@ -294,6 +297,7 @@ class RoutesTest {
                         fornavn = "Leia",
                         etternavn = "Organa",
                         epost = "prinsesse.leia.organa@example.com",
+                        enhet = "2980",
                         groups = emptyList(),
                     ),
                 ),
