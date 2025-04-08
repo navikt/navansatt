@@ -22,6 +22,7 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
+    val enhet: String?,
     val groups: List<String>,
 )
 
@@ -59,6 +60,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    enhet = it.streetAddress,
                     groups = it.groups
                 ),
             )
@@ -147,6 +149,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    enhet = it.streetAddress,
                     groups = it.groups
                 )
             }
