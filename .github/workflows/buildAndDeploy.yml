@@ -97,6 +97,7 @@ jobs:
           IMAGE: "${{ needs.build.outputs.image }}"
           RESOURCE: ${{matrix.resource}}
           CLUSTER: ${{matrix.cluster}}
+
   calculate-dora-metrics:
     runs-on: ubuntu-latest
     name: Calculate Lead time for changes & Deployment frequency
