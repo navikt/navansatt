@@ -97,4 +97,4 @@ jobs:
           IMAGE: "${{ needs.build.outputs.image }}"
           RESOURCE: ${{matrix.resource}}
           CLUSTER: ${{matrix.cluster}}
-          TELEMETRY: ${{ jobs.build.steps.build_push.outputs.telemetry }}
+          TELEMETRY: ${{ needs.build.outputs.telemetry }}
