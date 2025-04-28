@@ -103,7 +103,7 @@ jobs:
     steps:
       - uses: DeveloperMetrics/lead-time-for-changes@main
         with:
-          workflows: 'CI'
+          workflows: 'CI/CD'
       - uses: DeveloperMetrics/deployment-frequency@main
         with:
-          workflows: 'CI'
+          workflows: 'CI/CD'
