@@ -101,9 +101,9 @@ jobs:
     runs-on: ubuntu-latest
     name: Calculate Lead time for changes & Deployment frequency
     steps:
-      - uses: DeveloperMetrics/lead-time-for-changes@v1.2.20
+      - uses: DeveloperMetrics/lead-time-for-changes@main
         with:
-          workflows: 'Build and deploy main branch'
-      - uses: DeveloperMetrics/deployment-frequency@v1.5.18
+          workflows: 'CI'
+      - uses: DeveloperMetrics/deployment-frequency@main
         with:
-          workflows: 'Build and deploy main branch'
+          workflows: 'CI'
