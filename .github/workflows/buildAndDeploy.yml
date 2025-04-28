@@ -97,14 +97,4 @@ jobs:
           IMAGE: "${{ needs.build.outputs.image }}"
           RESOURCE: ${{matrix.resource}}
           CLUSTER: ${{matrix.cluster}}
-
-  calculate-dora-metrics:
-    runs-on: ubuntu-latest
-    name: Calculate Lead time for changes & Deployment frequency
-    steps:
-      - uses: DeveloperMetrics/lead-time-for-changes@main
-        with:
-          workflows: 'Build and deploy main branch'
-      - uses: DeveloperMetrics/deployment-frequency@main
-        with:
-          workflows: 'Build and deploy main branch'
+          TELEMETRY: ${{ jobs.build.steps.build_push.outputs.telemetry }}
