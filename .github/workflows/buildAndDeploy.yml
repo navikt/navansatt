@@ -104,7 +104,7 @@ jobs:
     steps:
       - uses: DeveloperMetrics/lead-time-for-changes@main
         with:
-          workflows: 'CI'
+          workflows: 'Build and deploy main branch'
       - uses: DeveloperMetrics/deployment-frequency@main
         with:
-          workflows: 'CI'
+          workflows: 'Build and deploy main branch'
