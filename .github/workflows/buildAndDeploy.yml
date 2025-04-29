@@ -42,34 +42,15 @@ jobs:
           identity_provider: ${{ secrets.NAIS_WORKLOAD_IDENTITY_PROVIDER }}
           team: teampensjon
 
-      - name: Docker meta
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: |
-            ${{ steps.login.outputs.registry }}/${{ github.repository }}/${{ github.repository_owner}}
-          tags: |
-            type=sha,prefix=${{ steps.version.outputs.time }}-,priority=9002
-
       - name: Build jar with Maven
         run: mvn clean package -DskipTests
 
       - name: Build and push
         if: ${{ github.actor != 'dependabot[bot]' }}
         id: build_push
-        uses: docker/build-push-action@v6
+        uses: nais/docker-build-push@v0
         with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-
-      - name: Set outputs
-        if: ${{ github.actor != 'dependabot[bot]' }}
-        shell: bash
-        id: set-outputs
-        run: |
-          echo "IMAGE=${{ fromJSON(steps.meta.outputs.json).tags[0] }}" >> $GITHUB_OUTPUT
+          team: teampensjon
 
   deploy:
     permissions:
