@@ -13,7 +13,7 @@ jobs:
       id-token: write
     runs-on: ubuntu-latest
     outputs:
-      image: "${{ steps.set-outputs.outputs.IMAGE }}"
+      image: "${{ steps.build_push.outputs.image }}"
       telemetry: "${{ steps.build_push.outputs.telemetry }}"
     steps:
       - uses: actions/checkout@v4
