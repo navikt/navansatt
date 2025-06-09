@@ -97,6 +97,37 @@ class ActiveDirectoryClient(
     }
 
     @WithSpan(kind = SpanKind.CLIENT)
+    suspend fun getUsersInGroup(group: String): List<User> = withContext(Dispatchers.IO) {
+        val root = InitialLdapContext(env, null)
+
+        val result = root.search(
+            "OU=Groups,OU=NAV,OU=BusinessUnits,$base",
+            "(&(objectClass=group))",
+            arrayOf(group),
+            SearchControls()
+        )
+
+        val users: MutableList<User> = ArrayList()
+        while (result.hasMore()) {
+            val entry = result.next()
+
+            users.add(
+                User(
+                    ident = readAttribute(entry.attributes, "cn"),
+                    displayName = readAttribute(entry.attributes, "displayname"),
+                    firstName = readAttribute(entry.attributes, "givenname"),
+                    lastName = readAttribute(entry.attributes, "sn"),
+                    email = readEmail(entry.attributes),
+                    streetAddress = readAttribute(entry.attributes, "streetaddress"),
+                    groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
+                )
+            )
+        }
+
+        users
+    }
+
+    @WithSpan(kind = SpanKind.CLIENT)
     suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 

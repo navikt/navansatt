@@ -163,6 +163,25 @@ fun Route.authenticatedRoutes(
             )
         }
     }
+
+    @Resource("/gruppe/{gruppeId}/navansatte")
+    data class GetAnsatteMedGruppe(val gruppeId: String)
+    get<GetAnsatteMedGruppe> { location ->
+        val allUsers = activeDirectoryClient.getUsersInGroup(location.gruppeId)
+
+        val navAnsattData: List<NavAnsattResult> = allUsers.map {
+            NavAnsattResult(
+                ident = it.ident,
+                navn = it.displayName,
+                fornavn = it.firstName,
+                etternavn = it.lastName,
+                epost = it.email,
+                enhet = it.streetAddress,
+                groups = it.groups
+            )
+        }
+        call.respond(navAnsattData)
+    }
 }
 
 fun Routing.routes(
