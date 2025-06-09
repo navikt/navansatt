@@ -97,13 +97,12 @@ class ActiveDirectoryClient(
     }
 
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUsersInGroup(group: String): List<User> = withContext(Dispatchers.IO) {
+    suspend fun getUsersInGroup(groupName: String): List<User> = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val result = root.search(
             "OU=Groups,OU=NAV,OU=BusinessUnits,$base",
-            "(&(objectClass=group))",
-            arrayOf(group),
+            "(&(objectClass=group)(cn=$groupName))",
             SearchControls()
         )
 
