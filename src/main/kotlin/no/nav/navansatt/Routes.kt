@@ -6,10 +6,11 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
 import io.ktor.server.resources.*
 import io.ktor.server.auth.authenticate
+import io.ktor.server.request.*
+import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
-import io.ktor.server.routing.Route
-import io.ktor.server.routing.Routing
+import io.ktor.server.routing.*
 import io.ktor.utils.io.*
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
@@ -179,8 +180,11 @@ fun Route.authenticatedRoutes(
 
     @Resource("/gruppe/navansatte")
     data class SearchAnsatteMedGruppe(val groupNames: List<String>)
-    post<SearchAnsatteMedGruppe> { location ->
-        val allUsers = activeDirectoryClient.getUsersInGroups(location.groupNames)
+
+    post("/gruppe/navansatte") {
+        val search = call.receive<SearchAnsatteMedGruppe>()
+
+        val allUsers = activeDirectoryClient.getUsersInGroups(search.groupNames)
 
         val navAnsattData = NavAnsattSearchResultList(
             allUsers.map {
