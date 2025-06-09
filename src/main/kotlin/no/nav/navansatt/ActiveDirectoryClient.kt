@@ -104,9 +104,9 @@ class ActiveDirectoryClient(
             "OU=Users,OU=NAV,OU=BusinessUnits,$base",
             "(&(objectClass=user)(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
             SearchControls().apply {
-                searchScope = SearchControls.SUBTREE_SCOPE
+                searchScope = SearchControls.OBJECT_SCOPE
                 returningAttributes = arrayOf(
-                    "cn", "displayName", "givenName", "sn", "mail", "streetAddress", "memberOf"
+                    "cn", "displayName", "givenName", "sn", "mail", "streetAddress",
                 )
             }
         )
@@ -123,7 +123,7 @@ class ActiveDirectoryClient(
                     lastName = readAttribute(entry.attributes, "sn"),
                     email = readEmail(entry.attributes),
                     streetAddress = readAttribute(entry.attributes, "streetaddress"),
-                    groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
+                    groups = emptyList() // entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
                 )
             )
         }
