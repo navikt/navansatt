@@ -106,7 +106,7 @@ class ActiveDirectoryClient(
         )
 
         val result = root.search(
-            "OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base",
+            "OU=Users,OU=NAV,OU=BusinessUnits,$base",
             "(&(objectClass=user)(memberOf:1.2.840.113556.1.4.1941:=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
             SearchControls().apply {
                 searchScope = SearchControls.SUBTREE_SCOPE
