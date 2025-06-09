@@ -115,7 +115,7 @@ class ActiveDirectoryClient(
             buildString {
                 append("(&(objectClass=user)(|")
                 groupNames.forEach { groupName ->
-                    append("(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))")
+                    append("(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base)")
                 }
                 append("))")
             },
