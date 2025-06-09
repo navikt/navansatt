@@ -104,15 +104,21 @@ class ActiveDirectoryClient(
     }
 
     /**
-     * Søkter etter brukere i en gitt gruppe. Returnerer et redusert søkeresult for bedre ytelse
+     * Søker etter brukere i gitte grupper. Returnerer et redusert søkeresult for bedre ytelse
      */
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUsersInGroup(groupName: String): List<UserSearch> = withContext(Dispatchers.IO) {
+    suspend fun getUsersInGroups(groupNames: List<String>): List<UserSearch> = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val result = root.search(
             "OU=Users,OU=NAV,OU=BusinessUnits,$base",
-            "(&(objectClass=user)(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
+            buildString {
+                append("(&(objectClass=user)(|")
+                groupNames.forEach { groupName ->
+                    append("(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base)")
+                }
+                append("))")
+            },
             SearchControls().apply {
                 searchScope = SearchControls.SUBTREE_SCOPE
                 returningAttributes = arrayOf(
