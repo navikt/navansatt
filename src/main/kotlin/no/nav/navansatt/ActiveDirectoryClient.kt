@@ -27,6 +27,13 @@ data class User(
     val groups: List<String>,
 )
 
+data class UserSearch(
+    val ident: String,
+    val displayName: String,
+    val firstName: String,
+    val lastName: String,
+)
+
 class ActiveDirectoryClient(
     val url: String,
     val base: String,
@@ -96,8 +103,11 @@ class ActiveDirectoryClient(
         users
     }
 
+    /**
+     * Søkter etter brukere i en gitt gruppe. Returnerer et redusert søkeresult for bedre ytelse
+     */
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUsersInGroup(groupName: String): List<User> = withContext(Dispatchers.IO) {
+    suspend fun getUsersInGroup(groupName: String): List<UserSearch> = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
 
         val result = root.search(
@@ -106,27 +116,19 @@ class ActiveDirectoryClient(
             SearchControls().apply {
                 searchScope = SearchControls.SUBTREE_SCOPE
                 returningAttributes = arrayOf(
-                    "cn", "displayName", "givenName", "sn", "mail", "streetAddress", // "memberOf"
+                    "cn", "displayName", "givenName", "sn"
                 )
             }
         )
 
-        val users: MutableList<User> = ArrayList()
-        while (result.hasMore()) {
-            val entry = result.next()
-
-            users.add(
-                User(
-                    ident = readAttribute(entry.attributes, "cn"),
-                    displayName = readAttribute(entry.attributes, "displayname"),
-                    firstName = readAttribute(entry.attributes, "givenname"),
-                    lastName = readAttribute(entry.attributes, "sn"),
-                    email = readEmail(entry.attributes),
-                    streetAddress = readAttribute(entry.attributes, "streetaddress"),
-                    groups = emptyList() // entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
-                )
+        val users = result.asSequence().map { entry ->
+            UserSearch(
+                ident = readAttribute(entry.attributes, "cn"),
+                displayName = readAttribute(entry.attributes, "displayname"),
+                firstName = readAttribute(entry.attributes, "givenname"),
+                lastName = readAttribute(entry.attributes, "sn"),
             )
-        }
+        }.toList()
 
         users
     }

@@ -38,6 +38,19 @@ data class Fagomrade(
     val kode: String,
 )
 
+@Serializable
+data class NavAnsattSearchResult(
+    val ident: String,
+    val navn: String,
+    val fornavn: String,
+    val etternavn: String,
+)
+
+@Serializable
+data class NavAnsattSearchResultList(
+    val navAnsatte: List<NavAnsattSearchResult>,
+)
+
 @OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
@@ -169,17 +182,17 @@ fun Route.authenticatedRoutes(
     get<GetAnsatteMedGruppe> { location ->
         val allUsers = activeDirectoryClient.getUsersInGroup(location.groupName)
 
-        val navAnsattData: List<NavAnsattResult> = allUsers.map {
-            NavAnsattResult(
-                ident = it.ident,
-                navn = it.displayName,
-                fornavn = it.firstName,
-                etternavn = it.lastName,
-                epost = it.email,
-                enhet = it.streetAddress,
-                groups = it.groups
-            )
-        }
+        val navAnsattData = NavAnsattSearchResultList(
+            allUsers.map {
+                NavAnsattSearchResult(
+                    ident = it.ident,
+                    navn = it.displayName,
+                    fornavn = it.firstName,
+                    etternavn = it.lastName,
+                )
+            }
+        )
+
         call.respond(navAnsattData)
     }
 }
