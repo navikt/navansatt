@@ -101,8 +101,8 @@ class ActiveDirectoryClient(
         val root = InitialLdapContext(env, null)
 
         val result = root.search(
-            "OU=Groups,OU=NAV,OU=BusinessUnits,$base",
-            "(&(objectClass=group)(cn=$groupName))",
+            "OU=NAV,OU=BusinessUnits,$base",
+            "(&(objectClass=user)(memberOf:1.2.840.113556.1.4.1941:=cn=$groupName,OU=NAV,OU=BusinessUnits,$base))",
             SearchControls()
         )
 
