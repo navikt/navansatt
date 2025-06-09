@@ -98,19 +98,12 @@ class ActiveDirectoryClient(
 
     @WithSpan(kind = SpanKind.CLIENT)
     suspend fun getUsersInGroup(groupName: String): List<User> = withContext(Dispatchers.IO) { Hashtable<String, String>()
-        val root = InitialLdapContext(
-            Hashtable(env).apply<Hashtable<String, String>> {
-                put(Context.REFERRAL, "ignore")
-            },
-            null
-        )
+        val root = InitialLdapContext(env, null)
 
         val result = root.search(
             "OU=Users,OU=NAV,OU=BusinessUnits,$base",
-            "(&(objectClass=user)(memberOf:1.2.840.113556.1.4.1941:=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
-            SearchControls().apply {
-                searchScope = SearchControls.SUBTREE_SCOPE
-            }
+            "(&(objectClass=user)(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
+            SearchControls()
         )
 
         val users: MutableList<User> = ArrayList()
