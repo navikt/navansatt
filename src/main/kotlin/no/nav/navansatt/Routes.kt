@@ -165,9 +165,9 @@ fun Route.authenticatedRoutes(
     }
 
     @Resource("/gruppe/{groupName}/navansatte")
-    data class GetAnsatteMedGruppe(val gruppeId: String)
+    data class GetAnsatteMedGruppe(val groupName: String)
     get<GetAnsatteMedGruppe> { location ->
-        val allUsers = activeDirectoryClient.getUsersInGroup(location.gruppeId)
+        val allUsers = activeDirectoryClient.getUsersInGroup(location.groupName)
 
         val navAnsattData: List<NavAnsattResult> = allUsers.map {
             NavAnsattResult(
