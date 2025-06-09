@@ -104,9 +104,9 @@ class ActiveDirectoryClient(
             "OU=Users,OU=NAV,OU=BusinessUnits,$base",
             "(&(objectClass=user)(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base))",
             SearchControls().apply {
-                searchScope = SearchControls.OBJECT_SCOPE
+                searchScope = SearchControls.SUBTREE_SCOPE
                 returningAttributes = arrayOf(
-                    "cn", "displayName", "givenName", "sn", "mail", "streetAddress",
+                    "cn", "displayName", "givenName", "sn", "mail", "streetAddress", // "memberOf"
                 )
             }
         )
