@@ -102,8 +102,10 @@ class ActiveDirectoryClient(
 
         val result = root.search(
             "OU=NAV,OU=BusinessUnits,$base",
-            "(&(objectClass=user)(memberOf:1.2.840.113556.1.4.1941:=cn=$groupName,OU=NAV,OU=BusinessUnits,$base))",
-            SearchControls()
+            "(&(objectClass=user)(memberOf:1.2.840.113556.1.4.1941:=CN=$groupName,OU=NAV,OU=BusinessUnits,$base))",
+            SearchControls().apply {
+                searchScope = SearchControls.SUBTREE_SCOPE
+            }
         )
 
         val users: MutableList<User> = ArrayList()
