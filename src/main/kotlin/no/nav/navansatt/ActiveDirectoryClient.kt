@@ -97,8 +97,13 @@ class ActiveDirectoryClient(
     }
 
     @WithSpan(kind = SpanKind.CLIENT)
-    suspend fun getUsersInGroup(groupName: String): List<User> = withContext(Dispatchers.IO) {
-        val root = InitialLdapContext(env, null)
+    suspend fun getUsersInGroup(groupName: String): List<User> = withContext(Dispatchers.IO) { Hashtable<String, String>()
+        val root = InitialLdapContext(
+            Hashtable(env).apply<Hashtable<String, String>> {
+                put(Context.REFERRAL, "ignore")
+            },
+            null
+        )
 
         val result = root.search(
             base,
