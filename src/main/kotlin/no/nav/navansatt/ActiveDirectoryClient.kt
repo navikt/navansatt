@@ -27,6 +27,13 @@ data class User(
     val groups: List<String>,
 )
 
+data class UserSearch(
+    val ident: String,
+    val displayName: String,
+    val firstName: String,
+    val lastName: String,
+)
+
 class ActiveDirectoryClient(
     val url: String,
     val base: String,
@@ -92,6 +99,42 @@ class ActiveDirectoryClient(
                 LOG.warn("Idents missing in LDAP: [${missing.joinToString(", ")}]")
             }
         }
+
+        users
+    }
+
+    /**
+     * Søker etter brukere i gitte grupper. Returnerer et redusert søkeresult for bedre ytelse
+     */
+    @WithSpan(kind = SpanKind.CLIENT)
+    suspend fun getUsersInGroups(groupNames: List<String>): List<UserSearch> = withContext(Dispatchers.IO) {
+        val root = InitialLdapContext(env, null)
+
+        val result = root.search(
+            "OU=Users,OU=NAV,OU=BusinessUnits,$base",
+            buildString {
+                append("(&(objectClass=user)(|")
+                groupNames.forEach { groupName ->
+                    append("(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base)")
+                }
+                append("))")
+            },
+            SearchControls().apply {
+                searchScope = SearchControls.SUBTREE_SCOPE
+                returningAttributes = arrayOf(
+                    "cn", "displayName", "givenName", "sn"
+                )
+            }
+        )
+
+        val users = result.asSequence().map { entry ->
+            UserSearch(
+                ident = readAttribute(entry.attributes, "cn"),
+                displayName = readAttribute(entry.attributes, "displayname"),
+                firstName = readAttribute(entry.attributes, "givenname"),
+                lastName = readAttribute(entry.attributes, "sn"),
+            )
+        }.toList()
 
         users
     }
