@@ -35,16 +35,16 @@ spec:
       rules:
         - application: pensjon-oracle-revisjon-backend-popp
           namespace: pensjon-revisjon
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: pensjon-oracle-revisjon-backend-pen
           namespace: pensjon-revisjon
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: pensjon-oracle-revisjon-backend-tp
           namespace: pensjon-revisjon
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: pensjon-oracle-revisjon-backend-sam
           namespace: pensjon-revisjon
-          cluster: prod-fss
+          cluster: prod-gcp
         - application: pensjon-pen
           namespace: pensjondeployer
         - application: pensjon-psak
