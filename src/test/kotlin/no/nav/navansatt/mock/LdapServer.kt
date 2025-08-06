@@ -43,7 +43,7 @@ objectClass: organizationalUnit
 objectClass: top
 """.trimIndent()
 
-class LdapServer(val port: Int) {
+class LdapServer(private val port: Int) {
     companion object {
         val LOG = LoggerFactory.getLogger(LdapServer::class.java)
     }
@@ -75,7 +75,10 @@ class LdapServer(val port: Int) {
                 addAttribute("givenname", it.givenname)
                 addAttribute("sn", it.sn)
                 addAttribute("mail", it.mail)
-                addAttribute("memberOf", it.memberOf.map { group -> "CN=$group,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,DC=test,DC=local" })
+                addAttribute("streetAddress", it.streetAddress)
+                addAttribute("memberOf", it.memberOf.map { group ->
+                    "CN=$group,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,DC=test,DC=local"
+                })
             }
 
             LDIFAddChangeRecord(entry).processChange(server)

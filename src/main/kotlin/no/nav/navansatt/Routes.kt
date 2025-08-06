@@ -1,20 +1,20 @@
 package no.nav.navansatt
 
-import io.ktor.application.call
-import io.ktor.auth.authenticate
-import io.ktor.client.features.ClientRequestException
+import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
-import io.ktor.locations.KtorExperimentalLocationsAPI
-import io.ktor.locations.Location
-import io.ktor.locations.get
-import io.ktor.response.respond
-import io.ktor.response.respondText
-import io.ktor.routing.Route
-import io.ktor.routing.Routing
-import io.micrometer.prometheus.PrometheusMeterRegistry
+import io.ktor.resources.*
+import io.ktor.server.resources.*
+import io.ktor.server.auth.authenticate
+import io.ktor.server.request.*
+import io.ktor.server.resources.post
+import io.ktor.server.response.respond
+import io.ktor.server.response.respondText
+import io.ktor.server.routing.*
+import io.ktor.utils.io.*
+import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
-import io.ktor.routing.get as simpleGet
+import io.ktor.server.routing.get as simpleGet
 
 @Serializable
 data class NavAnsattResult(
@@ -23,7 +23,8 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
-    val groups: List<String>
+    val enhet: String?,
+    val groups: List<String>,
 )
 
 @Serializable
@@ -38,7 +39,20 @@ data class Fagomrade(
     val kode: String,
 )
 
-@KtorExperimentalLocationsAPI
+@Serializable
+data class NavAnsattSearchResult(
+    val ident: String,
+    val navn: String,
+    val fornavn: String,
+    val etternavn: String,
+)
+
+@Serializable
+data class NavAnsattSearchResultList(
+    val navAnsatte: List<NavAnsattSearchResult>,
+)
+
+@OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,
@@ -48,7 +62,7 @@ fun Route.authenticatedRoutes(
         call.respond("OK")
     }
 
-    @Location("/navansatt/{ident}")
+    @Resource("/navansatt/{ident}")
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
         val result = activeDirectoryClient.getUser(location.ident)
@@ -60,6 +74,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    enhet = it.streetAddress,
                     groups = it.groups
                 ),
             )
@@ -73,7 +88,7 @@ fun Route.authenticatedRoutes(
         }
     }
 
-    @Location("/navansatt/{ident}/fagomrader")
+    @Resource("/navansatt/{ident}/fagomrader")
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
@@ -92,7 +107,7 @@ fun Route.authenticatedRoutes(
         }
     }
 
-    @Location("/navansatt/{ident}/enheter")
+    @Resource("/navansatt/{ident}/enheter")
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
@@ -127,13 +142,13 @@ fun Route.authenticatedRoutes(
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Feil i request for ${location.ident} melding ${error.response.content} status ${error.response}",
+                    message = "Feil i request for ${location.ident} melding ${error.response.rawContent} status ${error.response}",
                 )
             )
         }
     }
 
-    @Location("/enhet/{enhetId}/navansatte")
+    @Resource("/enhet/{enhetId}/navansatte")
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
@@ -148,6 +163,7 @@ fun Route.authenticatedRoutes(
                     fornavn = it.firstName,
                     etternavn = it.lastName,
                     epost = it.email,
+                    enhet = it.streetAddress,
                     groups = it.groups
                 )
             }
@@ -161,9 +177,31 @@ fun Route.authenticatedRoutes(
             )
         }
     }
+
+    @Resource("/gruppe/navansatte")
+    data class SearchAnsatteMedGruppe(val groupNames: List<String>)
+
+    post("/gruppe/navansatte") {
+        val search = call.receive<SearchAnsatteMedGruppe>()
+
+        val allUsers = activeDirectoryClient.getUsersInGroups(search.groupNames)
+
+        val navAnsattData = NavAnsattSearchResultList(
+            allUsers.map {
+                NavAnsattSearchResult(
+                    ident = it.ident,
+                    navn = it.displayName,
+                    fornavn = it.firstName,
+                    etternavn = it.lastName,
+                )
+            }
+        )
+
+        call.respond(navAnsattData)
+    }
 }
 
-fun Routing.Routes(
+fun Routing.routes(
     metricsRegistry: PrometheusMeterRegistry,
     activeDirectoryClient: ActiveDirectoryClient,
     axsysClient: AxsysClient,

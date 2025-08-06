@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.text.StringEscapeUtils
 import org.slf4j.LoggerFactory
 import java.util.Hashtable
+import java.util.Locale
 import java.util.regex.Pattern
 import javax.naming.Context
 import javax.naming.NamingEnumeration
@@ -22,13 +23,22 @@ data class User(
     val firstName: String,
     val lastName: String,
     val email: String,
-    val groups: List<String>
+    val streetAddress: String?,
+    val groups: List<String>,
 )
+
+data class UserSearch(
+    val ident: String,
+    val displayName: String,
+    val firstName: String,
+    val lastName: String,
+)
+
 class ActiveDirectoryClient(
     val url: String,
     val base: String,
     val username: String,
-    val password: String?
+    val password: String?,
 ) {
     companion object {
         private val LOG = LoggerFactory.getLogger(ActiveDirectoryClient::class.java)
@@ -71,7 +81,8 @@ class ActiveDirectoryClient(
                     firstName = readAttribute(entry.attributes, "givenname"),
                     lastName = readAttribute(entry.attributes, "sn"),
                     email = readEmail(entry.attributes),
-                    groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
+                    streetAddress = readAttribute(entry.attributes, "streetaddress"),
+                    groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
                 )
             )
         }
@@ -92,6 +103,42 @@ class ActiveDirectoryClient(
         users
     }
 
+    /**
+     * Søker etter brukere i gitte grupper. Returnerer et redusert søkeresult for bedre ytelse
+     */
+    @WithSpan(kind = SpanKind.CLIENT)
+    suspend fun getUsersInGroups(groupNames: List<String>): List<UserSearch> = withContext(Dispatchers.IO) {
+        val root = InitialLdapContext(env, null)
+
+        val result = root.search(
+            "OU=Users,OU=NAV,OU=BusinessUnits,$base",
+            buildString {
+                append("(&(objectClass=user)(|")
+                groupNames.forEach { groupName ->
+                    append("(memberOf=CN=$groupName,OU=AccountGroups,OU=Groups,OU=NAV,OU=BusinessUnits,$base)")
+                }
+                append("))")
+            },
+            SearchControls().apply {
+                searchScope = SearchControls.SUBTREE_SCOPE
+                returningAttributes = arrayOf(
+                    "cn", "displayName", "givenName", "sn"
+                )
+            }
+        )
+
+        val users = result.asSequence().map { entry ->
+            UserSearch(
+                ident = readAttribute(entry.attributes, "cn"),
+                displayName = readAttribute(entry.attributes, "displayname"),
+                firstName = readAttribute(entry.attributes, "givenname"),
+                lastName = readAttribute(entry.attributes, "sn"),
+            )
+        }.toList()
+
+        users
+    }
+
     @WithSpan(kind = SpanKind.CLIENT)
     suspend fun getUser(ident: String): User? = withContext(Dispatchers.IO) {
         val root = InitialLdapContext(env, null)
@@ -108,7 +155,7 @@ class ActiveDirectoryClient(
 
             val returnedIdent = readAttribute(entry.attributes, "cn")
 
-            if (ident.toLowerCase() != returnedIdent.toLowerCase()) {
+            if (ident.lowercase(Locale.getDefault()) != returnedIdent.lowercase(Locale.getDefault())) {
                 LOG.warn("Mismatch in ident: Asked for ident $ident but a user with CN $returnedIdent was found.")
             }
 
@@ -118,7 +165,8 @@ class ActiveDirectoryClient(
                 firstName = readAttribute(entry.attributes, "givenname"),
                 lastName = readAttribute(entry.attributes, "sn"),
                 email = readEmail(entry.attributes),
-                groups = entry.attributes["memberof"]?.getAll()?.let { getAllGroups(it) } ?: emptyList()
+                streetAddress = readAttribute(entry.attributes, "streetaddress"),
+                groups = entry.attributes["memberof"]?.all?.let { getAllGroups(it) } ?: emptyList()
             )
         }
 
