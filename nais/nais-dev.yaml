@@ -34,54 +34,6 @@ spec:
   accessPolicy:
     inbound:
       rules:
-        - application: pensjon-oracle-revisjon-backend-tp-q0
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-tp-q1
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-tp-q2
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-tp-q5
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-sam-q0
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-sam-q1
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-sam-q2
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-sam-q5
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-pen-q0
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-pen-q1
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-pen-q2
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-pen-q5
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-popp-q0
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-popp-q1
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-popp-q2
-          namespace: pensjon-revisjon
-          cluster: dev-fss
-        - application: pensjon-oracle-revisjon-backend-popp-q5
-          namespace: pensjon-revisjon
-          cluster: dev-fss
         - application: pensjon-pen-q0
           namespace: pensjon-q0
           cluster: dev-fss
