@@ -104,7 +104,7 @@ class ActiveDirectoryClient(
     }
 
     /**
-     * Søkter etter brukere i en gitt gruppe. Returnerer et redusert søkeresult for bedre ytelse
+     * Søker etter brukere i gitte grupper. Returnerer et redusert søkeresult for bedre ytelse
      */
     @WithSpan(kind = SpanKind.CLIENT)
     suspend fun getUsersInGroups(groupNames: List<String>): List<UserSearch> = withContext(Dispatchers.IO) {

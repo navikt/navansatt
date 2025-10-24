@@ -33,6 +33,15 @@ spec:
   accessPolicy:
     inbound:
       rules:
+        - application: pensjon-oracle-revisjon-backend
+          namespace: pensjon-revisjon
+          cluster: prod-fss
+        - application: pensjon-oracle-revisjon-backend-popp
+          namespace: pensjon-revisjon
+          cluster: prod-fss
+        - application: pensjon-oracle-revisjon-backend-pen-q2
+          namespace: pensjon-revisjon
+          cluster: dev-fss
         - application: pensjon-pen
           namespace: pensjondeployer
         - application: pensjon-psak
