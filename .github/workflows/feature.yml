@@ -22,10 +22,13 @@ jobs:
           key: "${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}"
           restore-keys: |
             ${{ runner.os }}-maven-
-      - uses: actions/setup-java@v5
+
+      - name: Configure JDK
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: 21
+          java-version: 25
+
       - name: Build
         shell: bash
         run: |
