@@ -51,6 +51,12 @@ jobs:
           tags: |
             type=sha,prefix=${{ steps.version.outputs.time }}-,priority=9002
 
+      - name: Configure JDK
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 25
+
       - name: Build jar with Maven
         run: mvn clean package -DskipTests
 
