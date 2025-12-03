@@ -7,7 +7,6 @@ import io.ktor.resources.*
 import io.ktor.server.resources.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.request.*
-import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
@@ -23,7 +22,7 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
-    val enhet: String?,
+    val enhet: String,
     val groups: List<String>,
 )
 
@@ -54,8 +53,7 @@ data class NavAnsattSearchResultList(
 
 @OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
-    activeDirectoryClient: ActiveDirectoryClient,
-    axsysClient: AxsysClient,
+    entraproxyClient: EntraproxyClient,
     norg2Client: Norg2Client,
 ) {
     simpleGet("/ping-authenticated") {
@@ -65,24 +63,23 @@ fun Route.authenticatedRoutes(
     @Resource("/navansatt/{ident}")
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
-        val result = activeDirectoryClient.getUser(location.ident)
-        result?.let {
-            call.respond(
-                NavAnsattResult(
-                    ident = location.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                    epost = it.email,
-                    enhet = it.streetAddress,
-                    groups = it.groups
-                ),
+        try {
+            val result = entraproxyClient.hentNavAnsatt(location.ident)
+            val response = NavAnsattResult(
+                ident = result!!.navIdent,
+                navn = result.visningNavn,
+                fornavn = result.fornavn,
+                etternavn = result.etternavn,
+                epost = result.epost,
+                enhet = result.enhet.enhetnummer,
+                groups = entraproxyClient.hentGrupperForAnsatt(location.ident)
             )
-        } ?: run {
+            call.respond(response)
+        } catch (error: NAVAnsattNotFoundError) {
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "User not found",
+                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
                 ),
             )
         }
@@ -92,8 +89,8 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
-            val result = axsysClient.hentTilganger(location.ident)
-            val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
+            val result = entraproxyClient.hentTema(location.ident)
+            val response = result.map {
                 Fagomrade(kode = it)
             }
             call.respond(response)
@@ -111,9 +108,9 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
-            val result = axsysClient.hentTilganger(location.ident)
-            if (result.enheter.isNotEmpty()) {
-                val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
+            val result = entraproxyClient.hentEnheter(location.ident)
+            if (result.isNotEmpty()) {
+                val enheter = norg2Client.hentEnheter(result.map { it.enhetnummer })
                 call.respond(
                     enheter.map {
                         NAVEnhetResult(
@@ -152,23 +149,24 @@ fun Route.authenticatedRoutes(
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
-            val result = axsysClient.hentAnsattIdenter(location.enhetId)
 
-            val allUsers = activeDirectoryClient.getUsers(result.map { it.appIdent })
-
-            val navAnsattData: List<NavAnsattResult> = allUsers.map {
+            val result = entraproxyClient.hentAnsattIdenter(location.enhetId)
+            val navAnsatte = result
+                .filter{ it.navIdent !in setOf("H150760", "Z995053", "X905111") && !it.navIdent.contains("X905") }     //FIXME: Midlertidig filter for å ekskludere testbruker som skaper problemer mangler enhet
+                .map {
+                val navAnsatt = entraproxyClient.hentNavAnsatt(it.navIdent)
                 NavAnsattResult(
-                    ident = it.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                    epost = it.email,
-                    enhet = it.streetAddress,
-                    groups = it.groups
+                    ident = navAnsatt!!.navIdent,
+                    navn = navAnsatt.visningNavn,
+                    fornavn = navAnsatt.fornavn,
+                    etternavn = navAnsatt.etternavn,
+                    epost = navAnsatt.epost,
+                    enhet = navAnsatt.enhet.enhetnummer,
+                    groups = entraproxyClient.hentGrupperForAnsatt(it.navIdent)
                 )
             }
-            call.respond(navAnsattData)
-        } catch (err: EnhetNotFoundError) {
+            call.respond(navAnsatte)
+        } catch (error: EnhetNotFoundError) {
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
@@ -183,28 +181,35 @@ fun Route.authenticatedRoutes(
 
     post("/gruppe/navansatte") {
         val search = call.receive<SearchAnsatteMedGruppe>()
+        val allResults = mutableListOf<NavAnsattSearchResult>()
 
-        val allUsers = activeDirectoryClient.getUsersInGroups(search.groupNames)
-
-        val navAnsattData = NavAnsattSearchResultList(
-            allUsers.map {
-                NavAnsattSearchResult(
-                    ident = it.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                )
+        try {
+            search.groupNames.forEach { groupName ->
+                val result = entraproxyClient.hentAnsatteIGruppe(groupName)
+                allResults.addAll(result.map {
+                    NavAnsattSearchResult(
+                        ident = it.navIdent,
+                        navn = it.visningNavn,
+                        fornavn = it.fornavn,
+                        etternavn = it.etternavn,
+                    )
+                })
             }
-        )
-
-        call.respond(navAnsattData)
+        } catch (error:  GroupNotFoundError){
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke gruppe ${error.message}",
+                )
+            )
+        }
+        call.respond(NavAnsattSearchResultList(navAnsatte = allResults.distinctBy { it.ident }))
     }
 }
 
 fun Routing.routes(
     metricsRegistry: PrometheusMeterRegistry,
-    activeDirectoryClient: ActiveDirectoryClient,
-    axsysClient: AxsysClient,
+    entraproxyClient: EntraproxyClient,
     norg2Client: Norg2Client,
 ) {
     simpleGet("/ping") {
@@ -226,10 +231,9 @@ fun Routing.routes(
         )
     }
 
-    authenticate("azure", "sts") {
+    authenticate("azure") {
         authenticatedRoutes(
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = norg2Client,
         )
     }

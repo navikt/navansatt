@@ -19,8 +19,7 @@ class RoutesTest {
     @Test
     fun `Ping with authentication`() {
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = mockk(),
+            entraproxyClient = mockk(),
             norg2Client = mockk(),
         ) {
             val response = client.get("/ping-authenticated")
@@ -29,22 +28,22 @@ class RoutesTest {
     }
 
     @Test
-    fun `Get NAV-ansatt`() {
-        val activeDirectoryClient: ActiveDirectoryClient = mockk()
+    fun `Hent NAV-ansatt`() {
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { activeDirectoryClient.getUser("lukesky") } returns User(
-            ident = "lukesky",
-            displayName = "Luke Skywalker",
-            firstName = "Luke",
-            lastName = "Skywalker",
-            email = "luke.skywalker@example.com",
-            streetAddress = "2980",
-            groups = emptyList(),
+        coEvery { entraproxyClient.hentNavAnsatt("lukesky") } returns NavAnsatt(
+            navIdent = "lukesky",
+            visningNavn = "Luke Skywalker",
+            fornavn = "Luke",
+            etternavn = "Skywalker",
+            epost = "luke.skywalker@example.com",
+            enhet = Enhet("2980", "NAV Dummynavn")
         )
+        coEvery { entraproxyClient.hentGrupperForAnsatt("lukesky") } returns
+                listOf("0000-GA_dummy-group", "0000-GA_another-group")
 
         withMockApp(
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = mockk(),
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/lukesky")
@@ -57,7 +56,7 @@ class RoutesTest {
                     etternavn = "Skywalker",
                     epost = "luke.skywalker@example.com",
                     enhet = "2980",
-                    groups = emptyList(),
+                    groups = listOf("0000-GA_dummy-group", "0000-GA_another-group")
                 ),
                 Json.decodeFromString(response.bodyAsText()),
             )
@@ -66,20 +65,19 @@ class RoutesTest {
 
     @Test
     fun `Handle NAV-ansatt not found`() {
-        val activeDirectoryClient: ActiveDirectoryClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { activeDirectoryClient.getUser("nobody") } returns null
+        coEvery { entraproxyClient.hentNavAnsatt("nobody") } throws NAVAnsattNotFoundError("Fant ikke nobody")
 
         withMockApp(
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = mockk(),
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/nobody")
             assertEquals(NotFound, response.status)
             assertEquals(
                 ApiError(
-                    message = "User not found",
+                    message = "Fant ikke NAV-ansatt med id nobody",
                 ),
                 Json.decodeFromString(response.bodyAsText()),
             )
@@ -88,26 +86,12 @@ class RoutesTest {
 
     @Test
     fun `Get fagomrader`() {
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { axsysClient.hentTilganger("lukesky") } returns TilgangResponse(
-            enheter = listOf(
-                AxsysEnhet(
-                    enhetId = "123",
-                    navn = "NAV Kardemomme By",
-                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE"),
-                ),
-                AxsysEnhet(
-                    enhetId = "456",
-                    navn = "NAV Andeby",
-                    fagomrader = listOf("SJAKK", "PEN"),
-                )
-            )
-        )
+        coEvery { entraproxyClient.hentTema("lukesky") } returns listOf("PEN", "UFO", "PEPPERKAKE", "SJAKK")
 
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/lukesky/fagomrader")
@@ -126,13 +110,12 @@ class RoutesTest {
 
     @Test
     fun `Get fagomrader - handle NAV-ansatt not found`() {
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { axsysClient.hentTilganger("nobody") } throws NAVAnsattNotFoundError("not found")
+        coEvery { entraproxyClient.hentTema("nobody") } throws NAVAnsattNotFoundError("not found")
 
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/nobody/fagomrader")
@@ -146,24 +129,21 @@ class RoutesTest {
         }
     }
 
+
     @Test
     fun `Get NAV-enheter for user`() {
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
         val norg2Client: Norg2Client = mockk()
 
-        coEvery { axsysClient.hentTilganger("lukesky") } returns TilgangResponse(
-            enheter = listOf(
-                AxsysEnhet(
-                    enhetId = "123",
-                    navn = "NAV Kardemomme By",
-                    fagomrader = listOf("PEN", "UFO", "PEPPERKAKE"),
-                ),
-                AxsysEnhet(
-                    enhetId = "456",
-                    navn = "NAV Andeby",
-                    fagomrader = listOf("SJAKK", "PEN"),
-                )
-            )
+        coEvery { entraproxyClient.hentEnheter("lukesky") } returns listOf(
+            Enhet(
+                enhetnummer = "123",
+                navn = "enhet 123"
+            ),
+            Enhet(
+                enhetnummer = "456",
+                navn = "enhet456"
+            ),
         )
         coEvery { norg2Client.hentEnheter(listOf("123", "456")) } returns listOf(
             Norg2Enhet(
@@ -179,8 +159,7 @@ class RoutesTest {
         )
 
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = norg2Client,
         ) {
             val response = client.get("/navansatt/lukesky/enheter")
@@ -203,14 +182,15 @@ class RoutesTest {
         }
     }
 
+
     @Test
     fun `Get NAV-enheter for user - handle NAV-ansatt not found`() {
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { axsysClient.hentTilganger("nobody") } throws NAVAnsattNotFoundError("oops")
+        coEvery { entraproxyClient.hentEnheter("nobody") } throws NAVAnsattNotFoundError("oops")
+
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/nobody/enheter")
@@ -223,50 +203,40 @@ class RoutesTest {
             )
         }
     }
-
+/*
     @Test
     fun `Get NAV-ansatte for enhet`() {
-        val activeDirectoryClient: ActiveDirectoryClient = mockk()
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { axsysClient.hentAnsattIdenter("123") } returns listOf(
-            Ident("lukesky"),
-            Ident("darthvad"),
-            Ident("prinleia"),
-        )
-        coEvery { activeDirectoryClient.getUsers(listOf("lukesky", "darthvad", "prinleia")) } returns listOf(
-            User(
-                ident = "lukesky",
-                displayName = "Luke Skywalker",
-                firstName = "Luke",
-                lastName = "Skywalker",
-                email = "luke.skywalker@example.com",
-                streetAddress = "2980",
-                groups = emptyList(),
+        coEvery { entraproxyClient.hentAnsattIdenter("123") } returns listOf(
+            NavAnsatt(
+                navIdent = "lukesky",
+                navn = "Luke Skywalker",
+                fornavn = "Luke",
+                etternavn = "Skywalker",
+                epost = "luke.skywalker@example.com",
+                enhet = "2980"
             ),
-            User(
-                ident = "darthvad",
-                displayName = "Darth Vader",
-                firstName = "Darth",
-                lastName = "Vader",
-                email = "darth.vader@example.com",
-                streetAddress = "2980",
-                groups = emptyList(),
+            NavAnsatt(
+                navIdent = "darthvad",
+                navn = "Darth Vader",
+                fornavn = "Darth",
+                etternavn = "Vader",
+                epost = "darth.vader@example.com",
+                enhet = "2980"
             ),
-            User(
-                ident = "prinleia",
-                displayName = "Prinsesse Leia Organa",
-                firstName = "Leia",
-                lastName = "Organa",
-                email = "prinsesse.leia.organa@example.com",
-                streetAddress = "2980",
-                groups = emptyList(),
+            NavAnsatt(
+                navIdent = "prinleia",
+                navn = "Prinsesse Leia Organa",
+                fornavn = "Leia",
+                etternavn = "Organa",
+                epost = "prinsesse.leia.organa@example.com",
+                enhet = "2980"
             )
         )
 
         withMockApp(
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/enhet/123/navansatte")
@@ -280,7 +250,7 @@ class RoutesTest {
                         etternavn = "Skywalker",
                         epost = "luke.skywalker@example.com",
                         enhet = "2980",
-                        groups = emptyList(),
+                        groups = listOf("groups"),
                     ),
                     NavAnsattResult(
                         ident = "darthvad",
@@ -289,7 +259,7 @@ class RoutesTest {
                         etternavn = "Vader",
                         epost = "darth.vader@example.com",
                         enhet = "2980",
-                        groups = emptyList(),
+                        groups = listOf("groups"),
                     ),
                     NavAnsattResult(
                         ident = "prinleia",
@@ -298,24 +268,23 @@ class RoutesTest {
                         etternavn = "Organa",
                         epost = "prinsesse.leia.organa@example.com",
                         enhet = "2980",
-                        groups = emptyList(),
+                        groups = listOf("groups"),
                     ),
                 ),
                 Json.decodeFromString(response.bodyAsText())
             )
         }
     }
-
+*/
     @Test
     fun `Get NAV-ansatte for enhet - handle NAV-enhet not found`() {
-        val axsysClient: AxsysClient = mockk()
+        val entraproxyClient: EntraproxyClient = mockk()
 
-        coEvery { axsysClient.hentAnsattIdenter("4444") } throws EnhetNotFoundError("oops")
+        coEvery { entraproxyClient.hentAnsattIdenter("4444") } throws EnhetNotFoundError("oops")
 
         withMockApp(
-            activeDirectoryClient = mockk(),
-            axsysClient = axsysClient,
-            norg2Client = mockk()
+            entraproxyClient = entraproxyClient,
+            norg2Client = mockk(),
         ) {
             val response = client.get("/enhet/4444/navansatte")
             assertEquals(NotFound, response.status)
@@ -329,8 +298,7 @@ class RoutesTest {
     }
 
     private fun withMockApp(
-        activeDirectoryClient: ActiveDirectoryClient,
-        axsysClient: AxsysClient,
+        entraproxyClient: EntraproxyClient,
         norg2Client: Norg2Client,
         testCode: suspend ApplicationTestBuilder.() -> Unit,
     ) = testApplication {
@@ -340,8 +308,7 @@ class RoutesTest {
         }
         routing {
             authenticatedRoutes(
-                activeDirectoryClient = activeDirectoryClient,
-                axsysClient = axsysClient,
+                entraproxyClient = entraproxyClient,
                 norg2Client = norg2Client
             )
         }

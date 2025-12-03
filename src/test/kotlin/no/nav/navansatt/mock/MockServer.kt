@@ -18,7 +18,6 @@ class MockServer(private val port: Int) {
             install(ContentNegotiation)
             routing {
                 oidcMocks()
-                axsysMock()
                 norg2Mock()
             }
         }

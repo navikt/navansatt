@@ -10,19 +10,14 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.apache.http.ssl.SSLContexts
 
+
 @Serializable
 data class ApiError(
     val message: String
 )
 
 fun main() {
-    val config = if (System.getenv("NAIS_APP_NAME") != null) appConfigNais() else appConfigLocal()
-    val activeDirectoryClient = ActiveDirectoryClient(
-        url = config.adUrl,
-        base = config.adBase,
-        username = config.adUsername,
-        password = config.adPassword
-    )
+    val config = appConfigNais()
     val httpClient = HttpClient(Apache5) {
         engine {
             sslContext = SSLContexts.createSystemDefault()
@@ -46,7 +41,6 @@ fun main() {
         mainModule(
             config = config,
             httpClient = httpClient,
-            activeDirectoryClient = activeDirectoryClient
         )
     }.start(wait = true)
 }
