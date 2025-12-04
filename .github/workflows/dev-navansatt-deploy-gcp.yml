@@ -1,0 +1,35 @@
+name: "Dev: navansatt deploy to dev-gcp"
+
+on:
+  workflow_dispatch:
+#  schedule:
+#    - cron: '0 4 * * SUN'
+
+jobs:
+  build-backend-and-publish-docker:
+    name: Build application
+    uses: navikt/pensjonsbruker-github-actions-workflows/.github/workflows/build-backend-and-publish-docker.yml@main
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      path: /
+      team: teampensjon
+      app: navansatt
+      java-version: 25
+      build-tool: maven
+    secrets: inherit
+
+  deploy-to-dev-gcp:
+    name: Deploy to dev-gcp
+    needs: build-backend-and-publish-docker
+    uses: navikt/pensjonsbruker-github-actions-workflows/.github/workflows/deploy.yml@main
+    permissions:
+      actions: read
+      contents: read
+      id-token: write
+    with:
+      cluster: dev-gcp
+      image: ${{ needs.build-backend-and-publish-docker.outputs.image }}
+      team: teampensjon
+      nais-template: .nais/nais-dev.yaml
