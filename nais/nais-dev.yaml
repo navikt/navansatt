@@ -74,9 +74,9 @@ spec:
         - application: pensjon-psak-q5
           namespace: pensjon-q5
           cluster: dev-gcp
-        - application: etterlatte-brev-api
-          namespace: etterlatte
-          cluster: dev-gcp
+#        - application: etterlatte-brev-api
+#          namespace: etterlatte
+#          cluster: dev-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: dev-gcp
@@ -95,18 +95,23 @@ spec:
         - application: skribenten-backend-lokal
           namespace: pensjonsbrev
           cluster: dev-gcp
+        - application: azure-token-generator
+          namespace: nais
+          cluster: dev-gcp
+    outbond:
+      rules:
+        - application: entraproxy
+          namespace: sikkerhetstjenesten
+          cluster: dev-gcp
+        - application: norg2
+          namespace: org
+          cluster: dev-gcp
   azure:
     application:
       enabled: true
       tenant: trygdeetaten.no
       allowAllUsers: true
   webproxy: true
-  # TODO: Enable observability when it's supported in dev-fss
-  # For now, this is set up manually.
-  # observability:
-  #   autoInstrumentation:
-  #     enabled: true
-  #     runtime: sdk
   env:
     - name: "NORG2_URL"
       value: "https://norg2.intern.dev.nav.no/norg2"
