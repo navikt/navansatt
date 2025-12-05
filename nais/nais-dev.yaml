@@ -98,7 +98,7 @@ spec:
         - application: azure-token-generator
           namespace: nais
           cluster: dev-gcp
-    outbond:
+    outbound:
       rules:
         - application: entraproxy
           namespace: sikkerhetstjenesten
