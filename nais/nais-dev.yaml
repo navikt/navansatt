@@ -126,5 +126,5 @@ spec:
       enabled: true
       runtime: java
       destinations:
-        - id: grafana-lgtm
-        - id: elastic-apm
+        - id: loki
+        - id: elastic
