@@ -35,11 +35,20 @@ import java.util.UUID
 fun Application.mainModule(
     config: ApplicationConfig,
     httpClient: HttpClient,
-    activeDirectoryClient: ActiveDirectoryClient,
 ) {
-    val axsysClient = AxsysClient(
+
+    val azureClientId = config.azureClientId
+    val entraIdClient = EntraIdClient(
+        clientId = azureClientId,
+        clientSecret = config.azureClientSecret,
+        endpoint = config.azureEndpoint,
         httpClient = httpClient,
-        axsysUrl = config.axsysUrl,
+    )
+    val entraproxyClient = EntraproxyClient(
+        httpClient = httpClient,
+        entraproxyUrl = config.entraproxyUrl,
+        entraIdClient = entraIdClient,
+        entraproxyScope = config.entraproxyScope,
     )
     val norg2Client = Norg2Client(
         httpClient = httpClient,
@@ -48,9 +57,6 @@ fun Application.mainModule(
 
     val azureOidc = runBlocking {
         discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.azureWellKnown)
-    }
-    val stsOidc = runBlocking {
-        discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.stsWellKnown)
     }
 
     val metricsRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -126,16 +132,8 @@ fun Application.mainModule(
                 GuavaCachedJwkProvider(UrlJwkProvider(URI(azureOidc.jwks_uri).toURL())),
                 azureOidc.issuer,
             ) {
-                config.azureClientId?.also { withAudience(it) }
+                azureClientId.also { withAudience(it) }
             }
-            validate { credential -> JWTPrincipal(credential.payload) }
-        }
-
-        jwt("sts") {
-            verifier(
-                GuavaCachedJwkProvider(UrlJwkProvider(URI(stsOidc.jwks_uri).toURL())),
-                stsOidc.issuer,
-            )
             validate { credential -> JWTPrincipal(credential.payload) }
         }
     }
@@ -143,8 +141,7 @@ fun Application.mainModule(
     routing {
         routes(
             metricsRegistry = metricsRegistry,
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = axsysClient,
+            entraproxyClient = entraproxyClient,
             norg2Client = norg2Client,
         )
     }
