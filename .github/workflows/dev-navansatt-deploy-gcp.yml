@@ -32,4 +32,4 @@ jobs:
       cluster: dev-gcp
       image: ${{ needs.build-backend-and-publish-docker.outputs.image }}
       team: teampensjon
-      nais-template: .nais/nais-dev.yaml
+      nais-template: nais/nais-dev.yaml
