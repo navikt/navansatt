@@ -9,8 +9,8 @@ WORKDIR /app
 
 ENV TZ="Europe/Oslo"
 
-ENV MAIN_CLASS=no.nav.pensjon.pen_app.PenApplication
-ENV LOGGING_CONFIG=classpath:logback-nais.xml
+ENV MAIN_CLASS=no.nav.navansatt.MainKt
+ENV LOGGING_CONFIG=classpath:logback.xml
 
 COPY java-opts.sh .
 

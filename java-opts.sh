@@ -1,5 +1,8 @@
 #!/usr/bin/env sh
 
+# Enable native access for Netty and other libraries that need it
+export JAVA_OPTS="${JAVA_OPTS} --enable-native-access=ALL-UNNAMED"
+
 if test -r "${NAV_TRUSTSTORE_PATH}";
 then
     if ! keytool -list -keystore ${NAV_TRUSTSTORE_PATH} -storepass "${NAV_TRUSTSTORE_PASSWORD}" > /dev/null;
