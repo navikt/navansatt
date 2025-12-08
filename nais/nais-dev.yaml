@@ -100,7 +100,7 @@ spec:
           cluster: dev-gcp
     outbound:
       rules:
-        - application: entraproxy
+        - application: entra-proxy
           namespace: sikkerhetstjenesten
           cluster: dev-gcp
         - application: norg2
