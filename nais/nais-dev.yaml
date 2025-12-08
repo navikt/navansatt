@@ -1,10 +1,10 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: "navansatt"
-  namespace: "teampensjon"
+  name: navansatt
+  namespace: teampensjon
   labels:
-    team: "teampensjon"
+    team: teampensjon
 spec:
   image: "{{{ image }}}"
   port: 7000
@@ -32,6 +32,18 @@ spec:
 #    - "https://navansatt.dev.adeo.no"
 #    - "https://navansatt.dev.intern.nav.no"
 #    - "https://navansatt.dev-fss-pub.nais.io"
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
   accessPolicy:
     inbound:
       rules:
@@ -74,9 +86,6 @@ spec:
         - application: pensjon-psak-q5
           namespace: pensjon-q5
           cluster: dev-gcp
-#        - application: etterlatte-brev-api
-#          namespace: etterlatte
-#          cluster: dev-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: dev-gcp
@@ -102,29 +111,15 @@ spec:
       rules:
         - application: entra-proxy
           namespace: sikkerhetstjenesten
-          cluster: dev-gcp
         - application: norg2
           namespace: org
-          cluster: dev-gcp
-  azure:
-    application:
-      enabled: true
-      tenant: trygdeetaten.no
-      allowAllUsers: true
   env:
-    - name: "NORG2_URL"
-      value: "https://norg2.intern.dev.nav.no/norg2"
-    - name: "ENTRAPROXY_URL"
-      value: "https://entraproxy.intern.dev.nav.no"
-    - name: "ENTRAPROXY_SCOPE"
-      value: "api://dev-gcp.sikkerhetstjenesten.entra-proxy/.default"
-    - name: "OTEL_RESOURCE_ATTRIBUTES"
-      value: "deployment.environment.name=q2"
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
-    logging:
-      destinations:
-        - id: elastic
-        - id: loki
+    - name: NORG2_URL
+      value: https://norg2.intern.dev.nav.no/norg2
+    - name: ENTRAPROXY_URL
+      value: https://entraproxy.intern.dev.nav.no
+    - name: ENTRAPROXY_SCOPE
+      value: api://dev-gcp.sikkerhetstjenesten.entra-proxy/.default
+    - name: OTEL_RESOURCE_ATTRIBUTES
+      value: deployment.environment.name=q2
+
