@@ -111,7 +111,6 @@ spec:
       enabled: true
       tenant: trygdeetaten.no
       allowAllUsers: true
-  webproxy: true
   env:
     - name: "NORG2_URL"
       value: "https://norg2.intern.dev.nav.no/norg2"
