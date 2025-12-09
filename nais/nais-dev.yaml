@@ -28,7 +28,7 @@ spec:
     enabled: true
     path: "/internal/metrics"
   ingresses:
-    - "https://navansatt.intern.dev.nav.no"
+    - https://navansatt.intern.dev.nav.no
 #    - "https://navansatt.dev.adeo.no"
 #    - "https://navansatt.dev.intern.nav.no"
 #    - "https://navansatt.dev-fss-pub.nais.io"
@@ -117,7 +117,7 @@ spec:
     - name: NORG2_URL
       value: https://norg2.intern.dev.nav.no/norg2
     - name: ENTRAPROXY_URL
-      value: https://entraproxy.intern.dev.nav.no
+      value: http://entra-proxy.sikkerhetstjenesten
     - name: ENTRAPROXY_SCOPE
       value: api://dev-gcp.sikkerhetstjenesten.entra-proxy/.default
     - name: OTEL_RESOURCE_ATTRIBUTES
