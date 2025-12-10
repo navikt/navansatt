@@ -92,18 +92,12 @@ spec:
         - application: eessi-pensjon-journalforing-q2
           namespace: eessipensjon
           cluster: dev-gcp
-        - application: eessi-pensjon-journalforing-q1
-          namespace: eessipensjon
+        - application: skribenten-backend
+          namespace: pensjonsbrev
           cluster: dev-gcp
         - application: ida
           namespace: traktor
           cluster: prod-fss
-        - application: skribenten-backend
-          namespace: pensjonsbrev
-          cluster: dev-gcp
-        - application: skribenten-backend-lokal
-          namespace: pensjonsbrev
-          cluster: dev-gcp
         - application: azure-token-generator
           namespace: nais
           cluster: dev-gcp
@@ -120,6 +114,3 @@ spec:
       value: http://entra-proxy.sikkerhetstjenesten
     - name: ENTRAPROXY_SCOPE
       value: api://dev-gcp.sikkerhetstjenesten.entra-proxy/.default
-    - name: OTEL_RESOURCE_ATTRIBUTES
-      value: deployment.environment.name=q2
-

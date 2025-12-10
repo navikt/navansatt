@@ -53,8 +53,8 @@ class EnhetNotFoundError(message: String) : Exception(message)
 class NAVAnsattNotFoundError(message: String) : Exception(message)
 class GroupNotFoundError(message: String) : Exception(message)
 
-fun HttpRequestBuilder.endtraproxyHeaders(token: String?) {
-    header("Nav-Call-Id", "ignore")
+fun HttpRequestBuilder.endtraproxyHeaders(token: String?, callId: String?) {
+    header("Nav-Call-Id", callId ?: "unknown")
     header("Nav-Consumer-Id", "navansatt")
     header("Accept", "application/json")
     header("Authorization", "Bearer " + token)
@@ -65,9 +65,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
         private val LOG = LoggerFactory.getLogger(EntraproxyClient::class.java)
     }
 
-    suspend fun hentTema(ident: String): List<String> {
+    suspend fun hentTema(ident: String, correlationId: String? = null): List<String> {
         val httpResponse = httpClient.get("$entraproxyUrl/api/v1/tema/ansatt/$ident") {
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {
@@ -81,9 +81,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
         }
     }
 
-    suspend fun hentEnheter(ident: String): List<Enhet> {
+    suspend fun hentEnheter(ident: String, correlationId: String? = null): List<Enhet> {
         val httpResponse = httpClient.get("$entraproxyUrl/api/v1/enhet/ansatt/$ident") {
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {
@@ -97,9 +97,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
         }
     }
 
-    suspend fun hentAnsattIdenter(enhetId: String): List<Ident> {
+    suspend fun hentAnsattIdenter(enhetId: String, correlationId: String? = null): List<Ident> {
         val httpResponse = httpClient.get("$entraproxyUrl/api/v1/enhet/$enhetId") {
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {
@@ -113,9 +113,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
         }
     }
 
-    suspend fun hentAnsatteIGruppe(gruppe: String): List<AnsattIGruppe> {
-        val httpResponse = httpClient.get("$entraproxyUrl/dev/gruppe/medlemmer?gruppeNavn=$gruppe") {   //FIXME: Need endpoint that works in production
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+    suspend fun hentAnsatteIGruppe(gruppe: String, correlationId: String? = null): List<AnsattIGruppe> {
+        val httpResponse = httpClient.get("$entraproxyUrl/api/v1/gruppe/medlemmer?gruppeNavn=$gruppe") {
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {
@@ -129,9 +129,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
         }
     }
 
-    suspend fun hentNavAnsatt(ident: String): NavAnsatt? {
-        val httpResponse = httpClient.get("$entraproxyUrl/dev/ansatt/$ident") {   //FIXME: Need endpoint that works in production
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+    suspend fun hentNavAnsatt(ident: String, correlationId: String? = null): NavAnsatt? {
+        val httpResponse = httpClient.get("$entraproxyUrl/api/v1/ansatt/$ident") {
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {
@@ -144,9 +144,9 @@ class EntraproxyClient(val httpClient: HttpClient, val entraproxyUrl: String, va
             throw exception
         }
     }
-    suspend fun hentGrupperForAnsatt(ident: String): List<String> {
-        val httpResponse = httpClient.get("$entraproxyUrl/dev/tilganger/ansatt/$ident") {   //FIXME: Need endpoint that works in production
-            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)))
+    suspend fun hentGrupperForAnsatt(ident: String, correlationId: String? = null): List<String> {
+        val httpResponse = httpClient.get("$entraproxyUrl/api/v1/ansatt/tilganger/$ident") {
+            endtraproxyHeaders(entraIdClient.retrieveClientCredentialsToken(listOf(entraproxyScope)), correlationId)
         }
 
         if (httpResponse.status.isSuccess()) {

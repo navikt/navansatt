@@ -6,6 +6,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
 import io.ktor.server.resources.*
 import io.ktor.server.auth.authenticate
+import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.*
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
@@ -64,7 +65,7 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
         try {
-            val result = entraproxyClient.hentNavAnsatt(location.ident)
+            val result = entraproxyClient.hentNavAnsatt(location.ident, call.callId)
             val response = NavAnsattResult(
                 ident = result!!.navIdent,
                 navn = result.visningNavn,
@@ -72,7 +73,7 @@ fun Route.authenticatedRoutes(
                 etternavn = result.etternavn,
                 epost = result.epost,
                 enhet = result.enhet.enhetnummer,
-                groups = entraproxyClient.hentGrupperForAnsatt(location.ident)
+                groups = entraproxyClient.hentGrupperForAnsatt(location.ident, call.callId)
             )
             call.respond(response)
         } catch (error: NAVAnsattNotFoundError) {
@@ -89,7 +90,7 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
-            val result = entraproxyClient.hentTema(location.ident)
+            val result = entraproxyClient.hentTema(location.ident, call.callId)
             val response = result.map {
                 Fagomrade(kode = it)
             }
@@ -108,7 +109,7 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
-            val result = entraproxyClient.hentEnheter(location.ident)
+            val result = entraproxyClient.hentEnheter(location.ident, call.callId)
             if (result.isNotEmpty()) {
                 val enheter = norg2Client.hentEnheter(result.map { it.enhetnummer })
                 call.respond(
@@ -149,12 +150,10 @@ fun Route.authenticatedRoutes(
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
-
-            val result = entraproxyClient.hentAnsattIdenter(location.enhetId)
+            val result = entraproxyClient.hentAnsattIdenter(location.enhetId, call.callId)
             val navAnsatte = result
-                .filter{ it.navIdent !in setOf("H150760", "Z995053", "X905111") && !it.navIdent.contains("X905") }     //FIXME: Midlertidig filter for å ekskludere testbruker som skaper problemer mangler enhet
                 .map {
-                val navAnsatt = entraproxyClient.hentNavAnsatt(it.navIdent)
+                val navAnsatt = entraproxyClient.hentNavAnsatt(it.navIdent, call.callId)
                 NavAnsattResult(
                     ident = navAnsatt!!.navIdent,
                     navn = navAnsatt.visningNavn,
@@ -162,7 +161,7 @@ fun Route.authenticatedRoutes(
                     etternavn = navAnsatt.etternavn,
                     epost = navAnsatt.epost,
                     enhet = navAnsatt.enhet.enhetnummer,
-                    groups = entraproxyClient.hentGrupperForAnsatt(it.navIdent)
+                    groups = entraproxyClient.hentGrupperForAnsatt(it.navIdent, call.callId)
                 )
             }
             call.respond(navAnsatte)
@@ -185,7 +184,7 @@ fun Route.authenticatedRoutes(
 
         try {
             search.groupNames.forEach { groupName ->
-                val result = entraproxyClient.hentAnsatteIGruppe(groupName)
+                val result = entraproxyClient.hentAnsatteIGruppe(groupName, call.callId)
                 allResults.addAll(result.map {
                     NavAnsattSearchResult(
                         ident = it.navIdent,

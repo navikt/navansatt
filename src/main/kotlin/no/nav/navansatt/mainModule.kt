@@ -85,7 +85,13 @@ fun Application.mainModule(
         }
     }
     install(CallId) {
-        retrieveFromHeader("correlationId")
+        // Try to retrieve from multiple header names in order of preference
+        retrieve { call ->
+            call.request.header("Nav-Call-Id")
+                ?: call.request.header("correlationId")
+                ?: call.request.header("X-Correlation-Id")
+        }
+        // Generate a new one if none provided
         generate { UUID.randomUUID().toString() }
     }
     install(Resources)
