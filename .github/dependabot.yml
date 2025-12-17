@@ -5,18 +5,17 @@
 
 version: 2
 updates:
-  - package-ecosystem: docker
-    directory: "/"
-    schedule:
-      interval: weekly
-    open-pull-requests-limit: 10
   - package-ecosystem: maven
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 50
+    cooldown:
+      default-days: 7
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
       interval: weekly
     open-pull-requests-limit: 10
+    cooldown:
+      default-days: 7
