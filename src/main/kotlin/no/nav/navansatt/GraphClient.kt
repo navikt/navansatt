@@ -199,21 +199,21 @@ class GraphClient(
     }
 
     suspend fun getTemaForUser(navIdent: String, correlationId: String?): List<String> {
-        val user = getUserByNavIdent(navIdent, correlationId) ?: return emptyList()
+        val user = getUserByNavIdent(navIdent, correlationId) ?: throw RuntimeException("No user found for $navIdent")
         val allGroups = getGroupsForUser(user.id, correlationId)
         return allGroups.filter { it.startsWith(NAV_TEMA_PREFIX) }
             .map { groupNameToTema(it) }
     }
 
     suspend fun getEnheterForUser(navIdent: String, correlationId: String?): List<String> {
-        val user = getUserByNavIdent(navIdent, correlationId) ?: return emptyList()
+        val user = getUserByNavIdent(navIdent, correlationId) ?: throw RuntimeException("No user found for $navIdent")
         val allGroups = getGroupsForUser(user.id, correlationId)
         return allGroups.filter { it.startsWith(NAV_ENHET_PREFIX) }
             .map { groupNameToEnhetId(it)}
     }
 
     suspend fun getUsersInGroup(groupName: String, correlationId: String?): List<User>? {
-        val groupId = getGroupIdByName(groupName, correlationId) ?: return null
+        val groupId = getGroupIdByName(groupName, correlationId) ?: throw RuntimeException("Group $groupName not found")
         return getGroupMembersById(groupId, correlationId)
     }
 

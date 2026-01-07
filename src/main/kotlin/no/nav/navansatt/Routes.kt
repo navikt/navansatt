@@ -164,7 +164,7 @@ fun Route.authenticatedRoutes(
 
             val res = groupId?.let {
                 graphClient.getGroupMembersById(it,call.callId)
-            } ?: emptyList()
+            } ?: throw RuntimeException("Enhet ${location.enhetId} er ikke funnet")
             val navAnsatte = res
                 .map {
                     NavAnsattResult(
@@ -213,7 +213,7 @@ fun Route.authenticatedRoutes(
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke gruppe ${exception.message} feil: ${exception.message}",
+                    message = "Fant ikke aktuell gruppe, feil: ${exception.message}",
                 )
             )
         }
