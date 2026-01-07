@@ -28,7 +28,7 @@ spec:
     enabled: true
     path: "/internal/metrics"
   ingresses:
-    - https://navansatt.intern.nav.no
+#    - https://navansatt.intern.nav.no
   observability:
     autoInstrumentation:
       enabled: true
@@ -72,14 +72,8 @@ spec:
           cluster: prod-gcp
     outbound:
       rules:
-        - application: entra-proxy
-          namespace: sikkerhetstjenesten
         - application: norg2
           namespace: org
   env:
     - name: NORG2_URL
       value: http://norg2.org/norg2
-    - name: ENTRAPROXY_URL
-      value: http://entra-proxy.sikkerhetstjenesten
-    - name: ENTRAPROXY_SCOPE
-      value: api://prod-gcp.sikkerhetstjenesten.entra-proxy/.default

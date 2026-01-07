@@ -35,21 +35,11 @@ import java.util.UUID
 fun Application.mainModule(
     config: ApplicationConfig,
     httpClient: HttpClient,
+    graphService: GraphClient,
 ) {
 
     val azureClientId = config.azureClientId
-    val entraIdClient = EntraIdClient(
-        clientId = azureClientId,
-        clientSecret = config.azureClientSecret,
-        endpoint = config.azureEndpoint,
-        httpClient = httpClient,
-    )
-    val entraproxyClient = EntraproxyClient(
-        httpClient = httpClient,
-        entraproxyUrl = config.entraproxyUrl,
-        entraIdClient = entraIdClient,
-        entraproxyScope = config.entraproxyScope,
-    )
+
     val norg2Client = Norg2Client(
         httpClient = httpClient,
         norg2Url = config.norg2Url,
@@ -147,8 +137,8 @@ fun Application.mainModule(
     routing {
         routes(
             metricsRegistry = metricsRegistry,
-            entraproxyClient = entraproxyClient,
             norg2Client = norg2Client,
+            graphService = graphService,
         )
     }
 }

@@ -1,12 +1,12 @@
 package no.nav.navansatt
 
-import io.ktor.client.HttpClient
+import io.ktor.client.*
 import io.ktor.client.engine.apache5.*
-import io.ktor.client.plugins.HttpTimeout
-import io.ktor.client.plugins.cache.HttpCache
-import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
-import io.ktor.serialization.kotlinx.json.json
-import io.ktor.server.engine.embeddedServer
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.cache.*
+import io.ktor.client.plugins.contentnegotiation.*
+import io.ktor.serialization.kotlinx.json.*
+import io.ktor.server.engine.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.apache.http.ssl.SSLContexts
@@ -46,10 +46,12 @@ fun main() {
         }
         install(ClientCallLogging)
     }
+    val graphService  = GraphClient(httpClient, config.azureClientId, config.azureClientSecret, config.azureTenant)
     embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
         mainModule(
             config = config,
             httpClient = httpClient,
+            graphService = graphService
         )
     }.start(wait = true)
 }

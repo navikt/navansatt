@@ -8,8 +8,7 @@ data class ApplicationConfig(
     val azureClientSecret: String,
     val azureEndpoint: String,
     val azureWellKnown: String,
-    val entraproxyUrl: String,
-    val entraproxyScope: String,
+    val azureTenant: String,
     val norg2Url: String
 )
 
@@ -19,9 +18,8 @@ fun readEnv(name: String): String =
 fun appConfigNais() = ApplicationConfig(
     azureClientId = readEnv("AZURE_APP_CLIENT_ID"),
     azureClientSecret = readEnv("AZURE_APP_CLIENT_SECRET"),
-    azureWellKnown = readEnv("AZURE_APP_WELL_KNOWN_URL"),
     azureEndpoint = readEnv("AZURE_OPENID_CONFIG_TOKEN_ENDPOINT"),
-    entraproxyUrl = readEnv("ENTRAPROXY_URL"),
-    entraproxyScope = readEnv("ENTRAPROXY_SCOPE"),
+    azureWellKnown = readEnv("AZURE_APP_WELL_KNOWN_URL"),
+    azureTenant = readEnv("AZURE_APP_TENANT_ID"),
     norg2Url = readEnv("NORG2_URL")
 )

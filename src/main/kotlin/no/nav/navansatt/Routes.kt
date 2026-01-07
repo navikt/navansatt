@@ -1,6 +1,5 @@
 package no.nav.navansatt
 
-import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
@@ -15,9 +14,19 @@ import io.ktor.utils.io.*
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
 import io.ktor.server.routing.get as simpleGet
+import org.slf4j.LoggerFactory
 
 @Serializable
 data class NavAnsattResult(
+    val ident: String,
+    val navn: String,
+    val fornavn: String,
+    val etternavn: String,
+    val epost: String,
+    val enhet: String,
+)
+@Serializable
+data class NavAnsattResultUtvidet(
     val ident: String,
     val navn: String,
     val fornavn: String,
@@ -54,9 +63,11 @@ data class NavAnsattSearchResultList(
 
 @OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
-    entraproxyClient: EntraproxyClient,
     norg2Client: Norg2Client,
+    graphClient: GraphClient
 ) {
+
+    val log = LoggerFactory.getLogger(Route::class.java)
     simpleGet("/ping-authenticated") {
         call.respond("OK")
     }
@@ -65,22 +76,24 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
         try {
-            val result = entraproxyClient.hentNavAnsatt(location.ident, call.callId)
-            val response = NavAnsattResult(
-                ident = result!!.navIdent,
-                navn = result.visningNavn,
-                fornavn = result.fornavn,
-                etternavn = result.etternavn,
-                epost = result.epost,
-                enhet = result.enhet.enhetnummer,
-                groups = entraproxyClient.hentGrupperForAnsatt(location.ident, call.callId)
+            val result = graphClient.getUserByNavIdent(location.ident, call.callId)
+            val id = result!!.id
+            val response = NavAnsattResultUtvidet(
+                ident = result.onPremisesSamAccountName,
+                navn = result.displayName,
+                fornavn = result.givenName,
+                etternavn = result.surname,
+                epost = result.userPrincipalName,
+                enhet = result.streetAddress,
+                groups = graphClient.getGroupsForUser(id, call.callId)
             )
             call.respond(response)
-        } catch (error: NAVAnsattNotFoundError) {
-            call.response.status(HttpStatusCode.NotFound)
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av NAV-ansatt", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
+                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 ),
             )
         }
@@ -90,16 +103,17 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
-            val result = entraproxyClient.hentTema(location.ident, call.callId)
+            val result = graphClient.getTemaForUser(location.ident, call.callId)
             val response = result.map {
                 Fagomrade(kode = it)
             }
             call.respond(response)
-        } catch (error: NAVAnsattNotFoundError) {
-            call.response.status(HttpStatusCode.NotFound)
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av fagområder for NAV-ansatt", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
+                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 ),
             )
         }
@@ -109,9 +123,9 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
-            val result = entraproxyClient.hentEnheter(location.ident, call.callId)
+            val result = graphClient.getEnheterForUser (location.ident, call.callId)
             if (result.isNotEmpty()) {
-                val enheter = norg2Client.hentEnheter(result.map { it.enhetnummer })
+                val enheter = norg2Client.hentEnheter(result.map { it })
                 call.respond(
                     enheter.map {
                         NAVEnhetResult(
@@ -122,6 +136,7 @@ fun Route.authenticatedRoutes(
                     }
                 )
             } else {
+                log.error("Feil ved henting av enheter for NAV-ansatt ${location.ident}: Ingen enheter funnet")
                 call.response.status(HttpStatusCode.NotFound)
                 call.respond(
                     ApiError(
@@ -129,18 +144,12 @@ fun Route.authenticatedRoutes(
                     )
                 )
             }
-        } catch (error: NAVAnsattNotFoundError) {
-            call.response.status(HttpStatusCode.NotFound)
-            call.respond(
-                ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
-                )
-            )
-        } catch (error: ClientRequestException) {
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av enheter for NAV-ansatt", exception)
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Feil i request for ${location.ident} melding ${error.response.rawContent} status ${error.response}",
+                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 )
             )
         }
@@ -150,26 +159,31 @@ fun Route.authenticatedRoutes(
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
-            val result = entraproxyClient.hentAnsattIdenter(location.enhetId, call.callId)
-            val navAnsatte = result
+            val groupId = graphClient.getGroupIdByName(graphClient.enhetIdToGroupName(enhetId = location.enhetId),call.callId)
+            log.info("Ser etter NAV-ansatte i gruppe med id: $groupId")
+
+            val res = groupId?.let {
+                graphClient.getGroupMembersById(it,call.callId)
+            } ?: emptyList()
+            val navAnsatte = res
                 .map {
-                val navAnsatt = entraproxyClient.hentNavAnsatt(it.navIdent, call.callId)
-                NavAnsattResult(
-                    ident = navAnsatt!!.navIdent,
-                    navn = navAnsatt.visningNavn,
-                    fornavn = navAnsatt.fornavn,
-                    etternavn = navAnsatt.etternavn,
-                    epost = navAnsatt.epost,
-                    enhet = navAnsatt.enhet.enhetnummer,
-                    groups = entraproxyClient.hentGrupperForAnsatt(it.navIdent, call.callId)
-                )
-            }
+                    NavAnsattResult(
+                        ident = it.onPremisesSamAccountName,
+                        navn = it.displayName,
+                        fornavn = it.givenName,
+                        etternavn = it.surname,
+                        epost = it.userPrincipalName,
+                        enhet = it.streetAddress
+                    )
+                }
             call.respond(navAnsatte)
-        } catch (error: EnhetNotFoundError) {
-            call.response.status(HttpStatusCode.NotFound)
+
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av NAV-ansatte i enhet", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-enhet med id ${location.enhetId}",
+                    message = "Fant ikke NAV-enhet med id ${location.enhetId}, feil: ${exception.message}",
                 )
             )
         }
@@ -184,21 +198,22 @@ fun Route.authenticatedRoutes(
 
         try {
             search.groupNames.forEach { groupName ->
-                val result = entraproxyClient.hentAnsatteIGruppe(groupName, call.callId)
-                allResults.addAll(result.map {
+                val result = graphClient.getUsersInGroup(groupName, call.callId)
+                allResults.addAll(result!!.map {
                     NavAnsattSearchResult(
-                        ident = it.navIdent,
-                        navn = it.visningNavn,
-                        fornavn = it.fornavn,
-                        etternavn = it.etternavn,
+                        ident = it.onPremisesSamAccountName,
+                        navn = it.displayName,
+                        fornavn = it.givenName,
+                        etternavn = it.surname
                     )
                 })
             }
-        } catch (error:  GroupNotFoundError){
-            call.response.status(HttpStatusCode.NotFound)
+        } catch (exception:  Exception){
+            log.error("Feil ved søk etter NAV-ansatte i grupper", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke gruppe ${error.message}",
+                    message = "Fant ikke gruppe ${exception.message} feil: ${exception.message}",
                 )
             )
         }
@@ -208,8 +223,8 @@ fun Route.authenticatedRoutes(
 
 fun Routing.routes(
     metricsRegistry: PrometheusMeterRegistry,
-    entraproxyClient: EntraproxyClient,
     norg2Client: Norg2Client,
+    graphService: GraphClient
 ) {
     simpleGet("/ping") {
         call.respond("OK")
@@ -232,8 +247,8 @@ fun Routing.routes(
 
     authenticate("azure") {
         authenticatedRoutes(
-            entraproxyClient = entraproxyClient,
             norg2Client = norg2Client,
+            graphClient = graphService
         )
     }
 }
