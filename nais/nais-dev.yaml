@@ -2,9 +2,9 @@ apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
   name: navansatt
-  namespace: teampensjon
+  namespace: pensjon-saksbehandling
   labels:
-    team: teampensjon
+    team: pensjon-saksbehandling
 spec:
   image: "{{{ image }}}"
   port: 7000

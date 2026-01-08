@@ -14,7 +14,7 @@ jobs:
       id-token: write
     with:
       path: /
-      team: teampensjon
+      team: pensjon-saksbehandling
       app: navansatt
       java-version: 25
       build-tool: maven
@@ -31,5 +31,5 @@ jobs:
     with:
       cluster: dev-gcp
       image: ${{ needs.build-backend-and-publish-docker.outputs.image }}
-      team: teampensjon
+      team: pensjon-saksbehandling
       nais-template: nais/nais-dev.yaml
