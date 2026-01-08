@@ -3,7 +3,7 @@
 Dette er en tjeneste for å hente ut metadata om NAV-ansatte.
 
 URL-er:
-- dev: https://navansatt.dev.adeo.no
+- dev: https://navansatt.intern.dev.nav.no
 - prod: https://navansatt.intern.nav.no
 
 ## Bruksanvisning
@@ -105,7 +105,7 @@ For å kjøre skriptet må du:
   3. Sett kontekst til dev gcp: `kubectl config use-context dev-gcp`
 
 #### AzureAD tokens for test lokalt og testmiljø
-1. [On Behalf of token](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-gcp:teampensjon:navansatt)
-2. [Client Credentials token](https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp:teampensjon:navansatt)
+1. [On Behalf of token](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-gcp:pensjon-saksbehandling:navansatt)
+2. [Client Credentials token](https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp:pensjon-saksbehandling:navansatt)
 
 
