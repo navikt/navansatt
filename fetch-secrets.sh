@@ -3,5 +3,5 @@
 # Fungerer for mac.. (pga /private/tmp/)
 currentDir=$(pwd)
 cd /private/tmp/
-env-fetch teampensjon navansatt azure navansatt.env
+env-fetch pensjon-saksbehandling navansatt azure navansatt.env
 cd $currentDir
