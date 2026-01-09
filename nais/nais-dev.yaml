@@ -31,6 +31,7 @@ spec:
     - "https://navansatt.dev.adeo.no"
     - "https://navansatt.dev.intern.nav.no"
     - "https://navansatt.dev-fss-pub.nais.io"
+    - "https://navansatt.intern.dev.nav.no"
   accessPolicy:
     inbound:
       rules:
