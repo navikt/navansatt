@@ -3,7 +3,7 @@
 Dette er en tjeneste for å hente ut metadata om NAV-ansatte.
 
 URL-er:
-- dev: https://navansatt.dev.adeo.no
+- dev: https://navansatt.intern.dev.nav.no
 - prod: https://navansatt.intern.nav.no
 
 ## Bruksanvisning
@@ -86,7 +86,26 @@ Respons: (eksempel)
 ```
 
 ### Lokal utvikling
+#### Bygg
+Applikasjonen bygges med Java 25.
+Bygg med `mvn clean install`
 
-1) Bygg med `mvn clean install`
-2) Start [vtp-pensjon](https://github.com/navikt/vtp-pensjon)
-3) Kjør main-metoden i `NAVAnsattApplication`.
+#### Oppsett lokalt (IntelliJ)
+- Velg `Run` -> `Edit Configurations...`
+- Velg `Configuration` MainKt (no.nav.navansatt.MainKt)
+- Kryss av for `Enable EnvFile`
+- Legg til filen som inneholder miljøvariabler: `/private/tmp/navansatt.env` og `navansatt.env`
+- Trykk OK
+
+For å kjøre applikasjonen lokalt er du nødt til å tilgjengeligjøre noen miljøvariabler som ikke er sjekket inn.
+Disse kan hentes ved å kjøre skriptet `./fetch-secrets.sh`.
+For å kjøre skriptet må du:
+  1. Ha installert [env-fetch](https://github.com/navikt/env-fetch)
+  2. Være innlogget i GCP: `nais login` eller `gcloud auth login`
+  3. Sett kontekst til dev gcp: `kubectl config use-context dev-gcp`
+
+#### AzureAD tokens for test lokalt og testmiljø
+1. [On Behalf of token](https://azure-token-generator.intern.dev.nav.no/api/obo?aud=dev-gcp:pensjon-saksbehandling:navansatt)
+2. [Client Credentials token](https://azure-token-generator.intern.dev.nav.no/api/m2m?aud=dev-gcp:pensjon-saksbehandling:navansatt)
+
+

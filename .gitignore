@@ -2,3 +2,5 @@
 *.iml
 target
 secrets
+/tmp/
+/src/main/kotlin/jsonParser.kt
