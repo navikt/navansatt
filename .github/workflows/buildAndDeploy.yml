@@ -16,7 +16,7 @@ jobs:
       image: "${{ steps.build_push.outputs.image }}"
       telemetry: "${{ steps.build_push.outputs.telemetry }}"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/cache@v4
         with:
           path: ~/.m2
@@ -78,7 +78,7 @@ jobs:
             resource: nais/nais-prod.yaml
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: nais/deploy/actions/deploy@v2
         name: 'Deploy to NAIS'
         env:
