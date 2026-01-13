@@ -1,9 +1,7 @@
 name: Build and deploy main branch to dev
 
 on:
-  push:
-    branches:
-     - sandbox
+  workflow_dispatch:
 
 jobs:
   build:
