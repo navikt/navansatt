@@ -53,6 +53,7 @@ data class Group (
 )
 
 class UserNotFoundException(userId: String) : RuntimeException("User with ID $userId not found")
+class GroupNotFoundException(groupId: String) : RuntimeException("Group with ID $groupId not found")
 
 class GraphClient(
     private val httpClient: HttpClient,
@@ -137,7 +138,10 @@ class GraphClient(
             val body = response.bodyAsText()
             val json = Json.parseToJsonElement(body).jsonObject
             val groups = json["value"]?.jsonArray
-            return groups?.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content
+            if (groups!!.isEmpty()) {
+                throw GroupNotFoundException(groupName)
+            }
+            return groups.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content
         } catch (e: Exception) {
             log.error("Error fetching group by name $groupName: ${e.message}")
             throw e

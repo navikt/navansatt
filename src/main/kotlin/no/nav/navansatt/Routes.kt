@@ -117,6 +117,14 @@ fun Route.authenticatedRoutes(
                 Fagomrade(kode = it)
             }
             call.respond(response)
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = exception.message!!,
+                ),
+            )
         } catch (exception: Exception) {
             log.error("Feil ved henting av fagområder for NAV-ansatt", exception)
             call.response.status(HttpStatusCode.InternalServerError)
@@ -153,6 +161,14 @@ fun Route.authenticatedRoutes(
                     )
                 )
             }
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = exception.message!!,
+                ),
+            )
         } catch (exception: Exception) {
             log.error("Feil ved henting av enheter for NAV-ansatt", exception)
             call.response.status(HttpStatusCode.InternalServerError)
@@ -187,6 +203,14 @@ fun Route.authenticatedRoutes(
                 }
             call.respond(navAnsatte)
 
+        } catch (exception: GroupNotFoundException) {
+            log.info("Fant ikke Enhet med id ${location.enhetId}")
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = "Enhet med id ${location.enhetId} finnes ikke: ${exception.message}",
+                ),
+            )
         } catch (exception: Exception) {
             log.error("Feil ved henting av NAV-ansatte i enhet", exception)
             call.response.status(HttpStatusCode.InternalServerError)
@@ -208,7 +232,7 @@ fun Route.authenticatedRoutes(
         try {
             search.groupNames.forEach { groupName ->
                 val result = graphClient.getUsersInGroup(groupName, call.callId)
-                allResults.addAll(result!!.map {
+                allResults.addAll(result.map {
                     NavAnsattSearchResult(
                         ident = it.onPremisesSamAccountName,
                         navn = it.displayName,
