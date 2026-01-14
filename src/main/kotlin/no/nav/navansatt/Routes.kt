@@ -88,12 +88,21 @@ fun Route.authenticatedRoutes(
                 groups = graphClient.getGroupsForUser(id, call.callId)
             )
             call.respond(response)
+
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
+            call.response.status(HttpStatusCode.NotFound)
+            call.respond(
+                ApiError(
+                    message = exception.message!!,
+                ),
+            )
         } catch (exception: Exception) {
             log.error("Feil ved henting av NAV-ansatt", exception)
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
+                    message = "Feil ved henting av NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 ),
             )
         }

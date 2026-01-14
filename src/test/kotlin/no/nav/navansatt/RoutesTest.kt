@@ -14,6 +14,7 @@ import kotlinx.serialization.json.Json
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
 import io.ktor.http.HttpStatusCode.Companion.InternalServerError
+import io.ktor.http.HttpStatusCode.Companion.NotFound
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.contentType
@@ -71,17 +72,17 @@ class RoutesTest {
     fun `Handle NAV-ansatt not found`() {
         val graphClient: GraphClient = mockk()
 
-        coEvery { graphClient.getUserByNavIdent("nobody",null) } throws RuntimeException("Fant ikke nobody")
+        coEvery { graphClient.getUserByNavIdent("nobody",null) } throws UserNotFoundException("nobody")
 
         withMockApp(
             graphClient = graphClient,
             norg2Client = mockk(),
         ) {
             val response = client.get("/navansatt/nobody")
-            assertEquals(InternalServerError, response.status)
+            assertEquals(NotFound, response.status)
             assertEquals(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id nobody feil: Fant ikke nobody",
+                    message = "User with ID nobody not found",
                 ),
                 Json.decodeFromString(response.bodyAsText()),
             )

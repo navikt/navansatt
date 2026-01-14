@@ -51,6 +51,9 @@ data class Group (
     val displayName: String,
     val securityEnabled: Boolean
 )
+
+class UserNotFoundException(val userId: String) : RuntimeException("User with ID $userId not found")
+
 class GraphClient(
     private val httpClient: HttpClient,
     private val azureClientId: String,
@@ -172,6 +175,9 @@ class GraphClient(
             val body = response.bodyAsText()
             val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
             val usersResponse = json.decodeFromString<GroupMembersResponse>(body)
+            if (usersResponse.value.isEmpty()) {
+                throw UserNotFoundException(navIdent)
+            }
             return usersResponse.value.firstOrNull()
         } catch (e: Exception) {
             log.error("Error fetching user by navIdent $navIdent: ${e.message}")
