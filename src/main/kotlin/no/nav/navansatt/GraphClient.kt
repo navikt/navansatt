@@ -52,13 +52,14 @@ data class Group (
     val securityEnabled: Boolean
 )
 
-class UserNotFoundException(val userId: String) : RuntimeException("User with ID $userId not found")
+class UserNotFoundException(userId: String) : RuntimeException("User with ID $userId not found")
 
 class GraphClient(
     private val httpClient: HttpClient,
     private val azureClientId: String,
     private val azureClientSecret: String,
-    private val azureTenant: String ) {
+    private val azureTokenEndpoint: String,
+    private val msGraphApiUrl: String){
 
     private var cachedToken: String? = null
     private var tokenExpiryTime: Long = 0
@@ -77,7 +78,7 @@ class GraphClient(
         const val TOP_MAX = 999
     }
 
-    suspend fun getAccessToken(tenantId: String, clientId: String, clientSecret: String): String? {
+    suspend fun getAccessToken(): String? {
         val now = System.currentTimeMillis()
 
         val deferredToAwait = tokenMutex.withLock {
@@ -88,13 +89,13 @@ class GraphClient(
 
             scope.async {
                 try {
-                    val response = httpClient.post("https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token") {
+                    val response = httpClient.post(azureTokenEndpoint) {
                         contentType(ContentType.Application.FormUrlEncoded)
                         setBody(
                             Parameters.build {
                                 append("grant_type", "client_credentials")
-                                append("client_id", clientId)
-                                append("client_secret", clientSecret)
+                                append("client_id", azureClientId)
+                                append("client_secret", azureClientSecret)
                                 append("scope", "https://graph.microsoft.com/.default")
                             }.formUrlEncode()
                         )
@@ -126,8 +127,8 @@ class GraphClient(
 
     suspend fun getGroupIdByName(groupName: String, correlationId: String?): String? {
         try {
-            val accessToken = getAccessToken(azureTenant, azureClientId, azureClientSecret)
-            val response: HttpResponse = httpClient.get("https://graph.microsoft.com/v1.0/groups") {
+            val accessToken = getAccessToken()
+            val response: HttpResponse = httpClient.get("$msGraphApiUrl/groups") {
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header("Nav-Call-Id", correlationId)
                 parameter("\$filter", "displayName eq '$groupName'")
@@ -144,8 +145,8 @@ class GraphClient(
     }
     suspend fun getGroupMembersById(id: String, correlationId: String?): List<User> {
         try {
-            val accessToken = getAccessToken(azureTenant, azureClientId, azureClientSecret)
-            val response: HttpResponse = httpClient.get("https://graph.microsoft.com/v1.0/groups/$id/members") {
+            val accessToken = getAccessToken()
+            val response: HttpResponse = httpClient.get("$msGraphApiUrl/groups/$id/members") {
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header("Nav-Call-Id", correlationId)
                 parameter("\$select", "id,onPremisesSamAccountName,displayName,givenName,surname,userPrincipalName,streetAddress")
@@ -163,8 +164,8 @@ class GraphClient(
 
     suspend fun getUserByNavIdent(navIdent: String, correlationId: String?): User? {
         try {
-            val accessToken = getAccessToken(azureTenant, azureClientId, azureClientSecret)
-            val response: HttpResponse = httpClient.get("https://graph.microsoft.com/v1.0/users") {
+            val accessToken = getAccessToken()
+            val response: HttpResponse = httpClient.get("$msGraphApiUrl/users") {
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header("ConsistencyLevel", "eventual")
                 header("Nav-Call-Id", correlationId)
@@ -187,8 +188,8 @@ class GraphClient(
 
     suspend fun getGroupsForUser(entraIdUUID: String, correlationId: String?): List<String> {
         try {
-            val accessToken = getAccessToken(azureTenant, azureClientId, azureClientSecret)
-            val response: HttpResponse = httpClient.get("https://graph.microsoft.com/v1.0/users/$entraIdUUID/memberOf") {
+            val accessToken = getAccessToken()
+            val response: HttpResponse = httpClient.get("$msGraphApiUrl/users/$entraIdUUID/memberOf") {
                 header(HttpHeaders.Authorization, "Bearer $accessToken")
                 header("Nav-Call-Id", correlationId)
                 parameter("\$select", "displayName,securityEnabled")
@@ -218,7 +219,7 @@ class GraphClient(
             .map { groupNameToEnhetId(it)}
     }
 
-    suspend fun getUsersInGroup(groupName: String, correlationId: String?): List<User>? {
+    suspend fun getUsersInGroup(groupName: String, correlationId: String?): List<User> {
         val groupId = getGroupIdByName(groupName, correlationId) ?: throw RuntimeException("Group $groupName not found")
         return getGroupMembersById(groupId, correlationId)
     }

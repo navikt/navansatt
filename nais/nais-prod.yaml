@@ -81,3 +81,5 @@ spec:
   env:
     - name: NORG2_URL
       value: http://norg2.org/norg2
+    - name: MS_GRAPH_API_URL
+      value: https://graph.microsoft.com/v1.0
