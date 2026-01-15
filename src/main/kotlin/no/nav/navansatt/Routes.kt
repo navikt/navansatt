@@ -231,22 +231,27 @@ fun Route.authenticatedRoutes(
 
         try {
             search.groupNames.forEach { groupName ->
-                val result = graphClient.getUsersInGroup(groupName, call.callId)
-                allResults.addAll(result.map {
-                    NavAnsattSearchResult(
-                        ident = it.onPremisesSamAccountName,
-                        navn = it.displayName,
-                        fornavn = it.givenName,
-                        etternavn = it.surname
-                    )
-                })
+                try {
+
+                    val result = graphClient.getUsersInGroup(groupName, call.callId)
+                    allResults.addAll(result.map {
+                        NavAnsattSearchResult(
+                            ident = it.onPremisesSamAccountName,
+                            navn = it.displayName,
+                            fornavn = it.givenName,
+                            etternavn = it.surname
+                        )
+                    })
+                } catch (exception: GroupNotFoundException) {
+                    log.warn("Group with name $groupName not found")
+                }
             }
         } catch (exception:  Exception){
             log.error("Feil ved søk etter NAV-ansatte i grupper", exception)
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Fant ikke aktuell gruppe, feil: ${exception.message}",
+                    message = "Feil ved søk etter NAV-ansatte i grupper, feil: ${exception.message}",
                 )
             )
         }
