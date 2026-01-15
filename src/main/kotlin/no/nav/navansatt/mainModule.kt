@@ -35,12 +35,11 @@ import java.util.UUID
 fun Application.mainModule(
     config: ApplicationConfig,
     httpClient: HttpClient,
-    activeDirectoryClient: ActiveDirectoryClient,
+    graphService: GraphClient,
 ) {
-    val axsysClient = AxsysClient(
-        httpClient = httpClient,
-        axsysUrl = config.axsysUrl,
-    )
+
+    val azureClientId = config.azureClientId
+
     val norg2Client = Norg2Client(
         httpClient = httpClient,
         norg2Url = config.norg2Url,
@@ -48,9 +47,6 @@ fun Application.mainModule(
 
     val azureOidc = runBlocking {
         discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.azureWellKnown)
-    }
-    val stsOidc = runBlocking {
-        discoverOidcMetadata(httpClient = httpClient, wellknownUrl = config.stsWellKnown)
     }
 
     val metricsRegistry = PrometheusMeterRegistry(PrometheusConfig.DEFAULT)
@@ -79,7 +75,13 @@ fun Application.mainModule(
         }
     }
     install(CallId) {
-        retrieveFromHeader("correlationId")
+        // Try to retrieve from multiple header names in order of preference
+        retrieve { call ->
+            call.request.header("Nav-Call-Id")
+                ?: call.request.header("correlationId")
+                ?: call.request.header("X-Correlation-Id")
+        }
+        // Generate a new one if none provided
         generate { UUID.randomUUID().toString() }
     }
     install(Resources)
@@ -126,16 +128,8 @@ fun Application.mainModule(
                 GuavaCachedJwkProvider(UrlJwkProvider(URI(azureOidc.jwks_uri).toURL())),
                 azureOidc.issuer,
             ) {
-                config.azureClientId?.also { withAudience(it) }
+                azureClientId.also { withAudience(it) }
             }
-            validate { credential -> JWTPrincipal(credential.payload) }
-        }
-
-        jwt("sts") {
-            verifier(
-                GuavaCachedJwkProvider(UrlJwkProvider(URI(stsOidc.jwks_uri).toURL())),
-                stsOidc.issuer,
-            )
             validate { credential -> JWTPrincipal(credential.payload) }
         }
     }
@@ -143,9 +137,8 @@ fun Application.mainModule(
     routing {
         routes(
             metricsRegistry = metricsRegistry,
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = axsysClient,
             norg2Client = norg2Client,
+            graphService = graphService,
         )
     }
 }

@@ -1,13 +1,12 @@
 package no.nav.navansatt
 
-import io.ktor.client.plugins.ClientRequestException
 import io.ktor.http.ContentType
 import io.ktor.http.HttpStatusCode
 import io.ktor.resources.*
 import io.ktor.server.resources.*
 import io.ktor.server.auth.authenticate
+import io.ktor.server.plugins.callid.callId
 import io.ktor.server.request.*
-import io.ktor.server.resources.post
 import io.ktor.server.response.respond
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.*
@@ -15,6 +14,7 @@ import io.ktor.utils.io.*
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry
 import kotlinx.serialization.Serializable
 import io.ktor.server.routing.get as simpleGet
+import org.slf4j.LoggerFactory
 
 @Serializable
 data class NavAnsattResult(
@@ -23,7 +23,16 @@ data class NavAnsattResult(
     val fornavn: String,
     val etternavn: String,
     val epost: String,
-    val enhet: String?,
+    val enhet: String,
+)
+@Serializable
+data class NavAnsattResultUtvidet(
+    val ident: String,
+    val navn: String,
+    val fornavn: String,
+    val etternavn: String,
+    val epost: String,
+    val enhet: String,
     val groups: List<String>,
 )
 
@@ -54,10 +63,11 @@ data class NavAnsattSearchResultList(
 
 @OptIn(InternalAPI::class)
 fun Route.authenticatedRoutes(
-    activeDirectoryClient: ActiveDirectoryClient,
-    axsysClient: AxsysClient,
     norg2Client: Norg2Client,
+    graphClient: GraphClient
 ) {
+
+    val log = LoggerFactory.getLogger(Route::class.java)
     simpleGet("/ping-authenticated") {
         call.respond("OK")
     }
@@ -65,24 +75,34 @@ fun Route.authenticatedRoutes(
     @Resource("/navansatt/{ident}")
     data class GetNAVAnsattLocation(val ident: String)
     get<GetNAVAnsattLocation> { location ->
-        val result = activeDirectoryClient.getUser(location.ident)
-        result?.let {
-            call.respond(
-                NavAnsattResult(
-                    ident = location.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                    epost = it.email,
-                    enhet = it.streetAddress,
-                    groups = it.groups
-                ),
+        try {
+            val result = graphClient.getUserByNavIdent(location.ident, call.callId)
+            val id = result!!.id
+            val response = NavAnsattResultUtvidet(
+                ident = result.onPremisesSamAccountName,
+                navn = result.displayName,
+                fornavn = result.givenName,
+                etternavn = result.surname,
+                epost = result.userPrincipalName,
+                enhet = result.streetAddress,
+                groups = graphClient.getGroupsForUser(id, call.callId)
             )
-        } ?: run {
+            call.respond(response)
+
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "User not found",
+                    message = exception.message!!,
+                ),
+            )
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av NAV-ansatt", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(
+                ApiError(
+                    message = "Feil ved henting av NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 ),
             )
         }
@@ -92,16 +112,25 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattFagomraderLocation(val ident: String)
     get<GetNAVAnsattFagomraderLocation> { location ->
         try {
-            val result = axsysClient.hentTilganger(location.ident)
-            val response: List<Fagomrade> = result.enheter.flatMap { it.fagomrader }.distinct().map {
+            val result = graphClient.getTemaForUser(location.ident, call.callId)
+            val response = result.map {
                 Fagomrade(kode = it)
             }
             call.respond(response)
-        } catch (error: NAVAnsattNotFoundError) {
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
+                    message = exception.message!!,
+                ),
+            )
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av fagområder for NAV-ansatt", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 ),
             )
         }
@@ -111,9 +140,9 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
-            val result = axsysClient.hentTilganger(location.ident)
-            if (result.enheter.isNotEmpty()) {
-                val enheter = norg2Client.hentEnheter(result.enheter.map { it.enhetId })
+            val result = graphClient.getEnheterForUser (location.ident, call.callId)
+            if (result.isNotEmpty()) {
+                val enheter = norg2Client.hentEnheter(result.map { it })
                 call.respond(
                     enheter.map {
                         NAVEnhetResult(
@@ -124,6 +153,7 @@ fun Route.authenticatedRoutes(
                     }
                 )
             } else {
+                log.error("Feil ved henting av enheter for NAV-ansatt ${location.ident}: Ingen enheter funnet")
                 call.response.status(HttpStatusCode.NotFound)
                 call.respond(
                     ApiError(
@@ -131,18 +161,20 @@ fun Route.authenticatedRoutes(
                     )
                 )
             }
-        } catch (error: NAVAnsattNotFoundError) {
+        } catch (exception: UserNotFoundException) {
+            log.info("Fant ikke NAV-ansatt med id ${location.ident}")
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-ansatt med id ${location.ident}",
-                )
+                    message = exception.message!!,
+                ),
             )
-        } catch (error: ClientRequestException) {
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av enheter for NAV-ansatt", exception)
             call.response.status(HttpStatusCode.InternalServerError)
             call.respond(
                 ApiError(
-                    message = "Feil i request for ${location.ident} melding ${error.response.rawContent} status ${error.response}",
+                    message = "Fant ikke NAV-ansatt med id ${location.ident} feil: ${exception.message}",
                 )
             )
         }
@@ -152,27 +184,39 @@ fun Route.authenticatedRoutes(
     data class GetEnhetAnsatte(val enhetId: String)
     get<GetEnhetAnsatte> { location ->
         try {
-            val result = axsysClient.hentAnsattIdenter(location.enhetId)
+            val groupId = graphClient.getGroupIdByName(graphClient.enhetIdToGroupName(enhetId = location.enhetId),call.callId)
+            log.info("Ser etter NAV-ansatte i gruppe med id: $groupId")
 
-            val allUsers = activeDirectoryClient.getUsers(result.map { it.appIdent })
+            val res = groupId?.let {
+                graphClient.getGroupMembersById(it,call.callId)
+            } ?: throw RuntimeException("Enhet ${location.enhetId} er ikke funnet")
+            val navAnsatte = res
+                .map {
+                    NavAnsattResult(
+                        ident = it.onPremisesSamAccountName,
+                        navn = it.displayName,
+                        fornavn = it.givenName,
+                        etternavn = it.surname,
+                        epost = it.userPrincipalName,
+                        enhet = it.streetAddress
+                    )
+                }
+            call.respond(navAnsatte)
 
-            val navAnsattData: List<NavAnsattResult> = allUsers.map {
-                NavAnsattResult(
-                    ident = it.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                    epost = it.email,
-                    enhet = it.streetAddress,
-                    groups = it.groups
-                )
-            }
-            call.respond(navAnsattData)
-        } catch (err: EnhetNotFoundError) {
+        } catch (exception: GroupNotFoundException) {
+            log.info("Fant ikke Enhet med id ${location.enhetId}")
             call.response.status(HttpStatusCode.NotFound)
             call.respond(
                 ApiError(
-                    message = "Fant ikke NAV-enhet med id ${location.enhetId}",
+                    message = "Enhet med id ${location.enhetId} finnes ikke: ${exception.message}",
+                ),
+            )
+        } catch (exception: Exception) {
+            log.error("Feil ved henting av NAV-ansatte i enhet", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke NAV-enhet med id ${location.enhetId}, feil: ${exception.message}",
                 )
             )
         }
@@ -183,29 +227,37 @@ fun Route.authenticatedRoutes(
 
     post("/gruppe/navansatte") {
         val search = call.receive<SearchAnsatteMedGruppe>()
+        val allResults = mutableListOf<NavAnsattSearchResult>()
 
-        val allUsers = activeDirectoryClient.getUsersInGroups(search.groupNames)
-
-        val navAnsattData = NavAnsattSearchResultList(
-            allUsers.map {
-                NavAnsattSearchResult(
-                    ident = it.ident,
-                    navn = it.displayName,
-                    fornavn = it.firstName,
-                    etternavn = it.lastName,
-                )
+        try {
+            search.groupNames.forEach { groupName ->
+                val result = graphClient.getUsersInGroup(groupName, call.callId)
+                allResults.addAll(result.map {
+                    NavAnsattSearchResult(
+                        ident = it.onPremisesSamAccountName,
+                        navn = it.displayName,
+                        fornavn = it.givenName,
+                        etternavn = it.surname
+                    )
+                })
             }
-        )
-
-        call.respond(navAnsattData)
+        } catch (exception:  Exception){
+            log.error("Feil ved søk etter NAV-ansatte i grupper", exception)
+            call.response.status(HttpStatusCode.InternalServerError)
+            call.respond(
+                ApiError(
+                    message = "Fant ikke aktuell gruppe, feil: ${exception.message}",
+                )
+            )
+        }
+        call.respond(NavAnsattSearchResultList(navAnsatte = allResults.distinctBy { it.ident }))
     }
 }
 
 fun Routing.routes(
     metricsRegistry: PrometheusMeterRegistry,
-    activeDirectoryClient: ActiveDirectoryClient,
-    axsysClient: AxsysClient,
     norg2Client: Norg2Client,
+    graphService: GraphClient
 ) {
     simpleGet("/ping") {
         call.respond("OK")
@@ -226,11 +278,10 @@ fun Routing.routes(
         )
     }
 
-    authenticate("azure", "sts") {
+    authenticate("azure") {
         authenticatedRoutes(
-            activeDirectoryClient = activeDirectoryClient,
-            axsysClient = axsysClient,
             norg2Client = norg2Client,
+            graphClient = graphService
         )
     }
 }

@@ -1,10 +1,10 @@
 apiVersion: "nais.io/v1alpha1"
 kind: "Application"
 metadata:
-  name: "navansatt"
-  namespace: "pensjondeployer"
+  name: navansatt
+  namespace: pensjon-saksbehandling
   labels:
-    team: "pensjondeployer"
+    team: pensjon-saksbehandling
 spec:
   image: "{{{ image }}}"
   port: 7000
@@ -15,9 +15,6 @@ spec:
     path: "/internal/isalive"
     initialDelay: 3
     timeout: 1
-  prometheus:
-    enabled: true
-    path: "/internal/metrics"
   readiness:
     path: "/internal/isready"
     initialDelay: 3
@@ -27,9 +24,24 @@ spec:
       memory: "4096Mi"
     requests:
       memory: "2048Mi"
+  prometheus:
+    enabled: true
+    path: "/internal/metrics"
   ingresses:
-    - "https://navansatt.intern.nav.no"
-    - "https://navansatt.prod-fss-pub.nais.io"
+#    - https://navansatt.intern.nav.no
+    - https://pensjon-navansatt.intern.nav.no
+  observability:
+    autoInstrumentation:
+      enabled: true
+      runtime: java
+    logging:
+      destinations:
+        - id: elastic
+        - id: loki
+  azure:
+    application:
+      enabled: true
+      allowAllUsers: true
   accessPolicy:
     inbound:
       rules:
@@ -50,9 +62,6 @@ spec:
         - application: pensjon-psak
           namespace: pensjondeployer
           cluster: prod-gcp
-        - application: etterlatte-brev-api
-          namespace: etterlatte
-          cluster: prod-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: prod-gcp
@@ -62,34 +71,12 @@ spec:
         - application: skribenten-backend
           namespace: pensjonsbrev
           cluster: prod-gcp
-  azure:
-    application:
-      enabled: true
-      tenant: nav.no
-      allowAllUsers: true
-  webproxy: true
+    outbound:
+      rules:
+        - application: norg2
+          namespace: org
   env:
-    - name: "LDAP_URL"
-      value: "ldaps://ldapgw.adeo.no"
-    - name: "LDAP_BASE"
-      value: "dc=adeo,dc=no"
-    - name: "AXSYS_URL"
-      value: "https://axsys.intern.nav.no"
-    - name: "NORG2_URL"
-      value: "https://norg2.intern.nav.no/norg2"
-    - name: "STS_WELL_KNOWN_URL"
-      value: "https://security-token-service.nais.adeo.no/.well-known/openid-configuration"
-    - name: "OTEL_RESOURCE_ATTRIBUTES"
-      value: "deployment.environment.name=p"
-  observability:
-    autoInstrumentation:
-      enabled: true
-      runtime: java
-      destinations:
-        - id: grafana-lgtm
-        - id: elastic-apm
-  vault:
-    enabled: true
-    paths:
-      - kvPath: "serviceuser/data/prod/srvssolinux"
-        mountPath: "/secrets/ldap"
+    - name: NORG2_URL
+      value: http://norg2.org/norg2
+    - name: MS_GRAPH_API_URL
+      value: https://graph.microsoft.com/v1.0
