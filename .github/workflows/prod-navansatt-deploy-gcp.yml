@@ -2,8 +2,12 @@ name: "Prod: navansatt deploy to prod-gcp"
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: '0 4 * * SUN'
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - .github/**
+      - README.md
 
 jobs:
   build-backend-and-publish-docker:
