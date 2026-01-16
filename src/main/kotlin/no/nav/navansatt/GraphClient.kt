@@ -143,7 +143,7 @@ class GraphClient(
             }
             return groups.firstOrNull()?.jsonObject?.get("id")?.jsonPrimitive?.content
         } catch (e: Exception) {
-            log.error("Error fetching group by name $groupName: ${e.message}")
+            log.warn("Not able to find group by name $groupName: ${e.message}")
             throw e
         }
     }
