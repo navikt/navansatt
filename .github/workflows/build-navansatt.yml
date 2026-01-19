@@ -1,0 +1,20 @@
+name: Build Navansatt
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - .github/**
+      - README.md
+    branches-ignore:
+      - main  # Bygges allerede av deploy-workflow
+
+jobs:
+  build-backend:
+    uses: navikt/pensjonsbruker-github-actions-workflows/.github/workflows/build-maven.yml@main
+    name: Build application
+    permissions:
+      actions: read
+      contents: read
+    secrets: inherit
+    with:
+      java-version: 25

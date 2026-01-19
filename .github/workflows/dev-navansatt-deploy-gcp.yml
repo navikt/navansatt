@@ -2,8 +2,8 @@ name: "Dev: navansatt deploy to dev-gcp"
 
 on:
   workflow_dispatch:
-#  schedule:
-#    - cron: '0 4 * * SUN'
+  schedule:
+    - cron: '0 4 * * SUN'
 
 jobs:
   build-backend-and-publish-docker:
