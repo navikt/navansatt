@@ -10,7 +10,7 @@
     <description>REST service for retrieving data about employees/NAV-ansatte</description>
 
     <properties>
-        <kotlin.version>2.2.21</kotlin.version>
+        <kotlin.version>2.3.10</kotlin.version>
         <ktor.version>3.3.3</ktor.version>
     </properties>
 
