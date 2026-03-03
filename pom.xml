@@ -10,8 +10,8 @@
     <description>REST service for retrieving data about employees/NAV-ansatte</description>
 
     <properties>
-        <kotlin.version>2.2.21</kotlin.version>
-        <ktor.version>3.3.3</ktor.version>
+        <kotlin.version>2.3.10</kotlin.version>
+        <ktor.version>3.4.0</ktor.version>
     </properties>
 
     <dependencyManagement>
@@ -26,14 +26,14 @@
             <dependency>
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
-                <version>6.0.2</version>
+                <version>6.0.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
-                <version>1.58.0</version>
+                <version>1.59.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -83,19 +83,11 @@
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
-            <artifactId>ktor-client-apache-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
             <artifactId>ktor-client-apache5-jvm</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-client-content-negotiation-jvm</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-client-serialization-jvm</artifactId>
         </dependency>
         <dependency>
             <groupId>io.ktor</groupId>
@@ -107,33 +99,16 @@
         </dependency>
 
         <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-api</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry.instrumentation</groupId>
-            <artifactId>opentelemetry-instrumentation-annotations</artifactId>
-            <version>2.23.0</version>
-        </dependency>
-
-        <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.16.1</version>
+            <version>1.16.3</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-text</artifactId>
-            <version>1.15.0</version>
-        </dependency>
-
 
         <!-- Logging -->
         <dependency>
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
-            <version>1.5.24</version>
+            <version>1.5.32</version>
         </dependency>
         <dependency>
             <groupId>net.logstash.logback</groupId>
@@ -156,12 +131,7 @@
         <dependency>
             <groupId>io.mockk</groupId>
             <artifactId>mockk-jvm</artifactId>
-            <version>1.14.7</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.ktor</groupId>
-            <artifactId>ktor-client-mock</artifactId>
+            <version>1.14.9</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -239,7 +209,7 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.4</version>
+                <version>3.5.5</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

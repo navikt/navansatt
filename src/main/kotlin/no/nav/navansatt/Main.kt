@@ -9,7 +9,7 @@ import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.engine.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.apache.http.ssl.SSLContexts
+import javax.net.ssl.SSLContext
 
 
 @Serializable
@@ -25,7 +25,7 @@ fun main() {
     val config = appConfigNais()
     val httpClient = HttpClient(Apache5) {
         engine {
-            sslContext = SSLContexts.createSystemDefault()
+            sslContext = SSLContext.getDefault()
             connectTimeout = 10_000  // 10 seconds for establishing connection
             socketTimeout = 30_000   // 30 seconds for socket operations
             connectionRequestTimeout = 30_000  // 30 seconds for getting connection from pool
