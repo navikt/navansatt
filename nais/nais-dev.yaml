@@ -86,6 +86,9 @@ spec:
         - application: pensjon-psak-q5
           namespace: pensjon-q5
           cluster: dev-gcp
+        - application: pensjonskalkulator-backend
+          namespace: pensjonskalkulator
+          cluster: dev-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: dev-gcp
