@@ -63,6 +63,9 @@ spec:
         - application: pensjon-psak
           namespace: pensjondeployer
           cluster: prod-gcp
+        - application: pensjonskalkulator-backend
+          namespace: pensjonskalkulator
+          cluster: prod-gcp
         - application: etterlatte-behandling
           namespace: etterlatte
           cluster: prod-gcp
