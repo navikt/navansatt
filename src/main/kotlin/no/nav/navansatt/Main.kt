@@ -53,20 +53,5 @@ fun main() {
             httpClient = httpClient,
             graphService = graphService
         )
-    }.let { server ->
-        try {
-            server.start(wait = true)
-        } catch (e: IllegalStateException) {
-            // Ktor 3.5 race: if SIGTERM is delivered between `applicationInstance = application`
-            // and the property read in EmbeddedServer.start() (line 382), the shutdown hook nulls
-            // the instance and the main thread throws "EmbeddedServer was stopped". This is a
-            // normal shutdown – exit cleanly instead of crashing the JVM.
-            if (e.message == "EmbeddedServer was stopped") {
-                org.slf4j.LoggerFactory.getLogger("Main")
-                    .info("Server stopped during startup (likely SIGTERM during slow module load); exiting normally.")
-            } else {
-                throw e
-            }
-        }
-    }
+    }.start(wait = true)
 }
