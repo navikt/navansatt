@@ -13,14 +13,12 @@ spec:
     max: 8
   liveness:
     path: "/internal/isalive"
-    initialDelay: 20
+    initialDelay: 3
     timeout: 1
-    failureThreshold: 10
   readiness:
     path: "/internal/isready"
-    initialDelay: 20
+    initialDelay: 3
     timeout: 1
-    failureThreshold: 10
   resources:
     limits:
       memory: "4096Mi"
