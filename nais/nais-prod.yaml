@@ -28,11 +28,10 @@ spec:
     enabled: true
     path: "/internal/metrics"
   ingresses:
-#    - https://navansatt.intern.nav.no
     - https://pensjon-navansatt.intern.nav.no
   observability:
     autoInstrumentation:
-      enabled: true
+      enabled: false  # Auto-instrumentering er deaktivert pga feil med ktor v 3.5.0
       runtime: java
     logging:
       destinations:

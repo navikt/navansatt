@@ -29,12 +29,9 @@ spec:
     path: "/internal/metrics"
   ingresses:
     - https://navansatt.intern.dev.nav.no
-#    - "https://navansatt.dev.adeo.no"
-#    - "https://navansatt.dev.intern.nav.no"
-#    - "https://navansatt.dev-fss-pub.nais.io"
   observability:
     autoInstrumentation:
-      enabled: false
+      enabled: false  # Auto-instrumentering er deaktivert pga feil med ktor v 3.5.0
       runtime: java
     logging:
       destinations:
