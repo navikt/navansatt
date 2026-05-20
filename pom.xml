@@ -11,7 +11,7 @@
 
     <properties>
         <kotlin.version>2.3.21</kotlin.version>
-        <ktor.version>3.4.0</ktor.version>
+        <ktor.version>3.5.0</ktor.version>
     </properties>
 
     <dependencyManagement>
@@ -20,6 +20,13 @@
                 <groupId>io.ktor</groupId>
                 <artifactId>ktor-bom</artifactId>
                 <version>${ktor.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.21.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

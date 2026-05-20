@@ -47,7 +47,7 @@ fun main() {
         install(ClientCallLogging)
     }
     val graphService  = GraphClient(httpClient, config.azureClientId, config.azureClientSecret, config.azureTokenEndpoint, config.msGraphApiUrl)
-    embeddedServer(io.ktor.server.netty.Netty, port = 7000) {
+    embeddedServer(io.ktor.server.netty.Netty, port = 7000, host = "0.0.0.0") {
         mainModule(
             config = config,
             httpClient = httpClient,
