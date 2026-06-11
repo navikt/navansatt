@@ -140,7 +140,7 @@ fun Route.authenticatedRoutes(
     data class GetNAVAnsattEnheterLocation(val ident: String)
     get<GetNAVAnsattEnheterLocation> { location ->
         try {
-            val result = graphClient.getEnheterForUser (location.ident, call.callId)
+            val result = graphClient.getEnheterForUser(location.ident, call.callId)
             if (result.isNotEmpty()) {
                 val enheter = norg2Client.hentEnheter(result.map { it })
                 call.respond(
