@@ -9,7 +9,6 @@ jobs:
     name: Label dependabot PRs per app
     permissions:
       pull-requests: write
-      repository-projects: read
     runs-on: ubuntu-latest
     if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && !github.event.pull_request.head.repo.fork }}
     timeout-minutes: 15
