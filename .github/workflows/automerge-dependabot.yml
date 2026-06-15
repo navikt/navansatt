@@ -1,0 +1,20 @@
+name: "(Automerge): Dependabot updates"
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0,10,20,30 10 * * 1,2,3,4,5'
+
+jobs:
+  merge-dependabot-pr:
+    name: Merge dependabot pr
+    uses: navikt/pensjonsbruker-github-actions-workflows/.github/workflows/merge-dependabot-pr.yml@main
+    permissions:
+      actions: write
+      checks: read
+      contents: write
+      pull-requests: write
+      statuses: read
+    with:
+      workflow-id: prod-navansatt-deploy-gcp.yml
+      label: automerge
+
