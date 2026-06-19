@@ -12,21 +12,21 @@
     <properties>
         <kotlin.version>2.3.21</kotlin.version>
         <ktor.version>3.5.0</ktor.version>
+        <netty.version>4.2.15.Final</netty.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <!-- Pin jackson-databind: logstash-logback-encoder pulls in the vulnerable 3.0.1 -->
+            <dependency>
+                <groupId>tools.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>3.2.0</version>
+            </dependency>
             <dependency>
                 <groupId>io.ktor</groupId>
                 <artifactId>ktor-bom</artifactId>
                 <version>${ktor.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson</groupId>
-                <artifactId>jackson-bom</artifactId>
-                <version>2.22.0</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -40,7 +40,14 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom</artifactId>
-                <version>1.62.0</version>
+                <version>1.63.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-bom</artifactId>
+                <version>${netty.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -108,7 +115,7 @@
         <dependency>
             <groupId>io.micrometer</groupId>
             <artifactId>micrometer-registry-prometheus</artifactId>
-            <version>1.16.5</version>
+            <version>1.17.0</version>
         </dependency>
 
         <!-- Logging -->
