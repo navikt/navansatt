@@ -10,8 +10,19 @@ on:
       - README.md
 
 jobs:
+  verify-branch:
+    name: Verify deploy is from main
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if not on main branch
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::Deploy to prod is only allowed from the 'main' branch. Current ref: ${{ github.ref }}"
+          exit 1
+
   build-backend-and-publish-docker:
     name: Build application
+    needs: verify-branch
     uses: navikt/pensjonsbruker-github-actions-workflows/.github/workflows/build-backend-and-publish-docker.yml@main
     permissions:
       contents: read
