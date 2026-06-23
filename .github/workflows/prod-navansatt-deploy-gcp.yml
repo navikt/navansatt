@@ -17,7 +17,7 @@ jobs:
       - name: Fail if not on main branch
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "::warning::Deploy to prod is only allowed from the 'main' branch. Current ref: ${{ github.ref }}"
+          echo "::error::Deploy to prod is only allowed from the 'main' branch. Current ref: ${{ github.ref }}"
           exit 1
 
   build-backend-and-publish-docker:
