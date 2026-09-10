@@ -32,6 +32,11 @@ data class GroupMembersResponse(
 )
 
 @Serializable
+data class UsersResponse(
+    val value: List<User>
+)
+
+@Serializable
 data class User(
     val id: String = "",
     val onPremisesSamAccountName: String,
@@ -48,7 +53,7 @@ data class MemberOfResponse(
 )
 @Serializable
 data class Group (
-    val displayName: String,
+    val displayName: String? = "Unknown Role/Group",
     val securityEnabled: Boolean
 )
 
@@ -179,7 +184,7 @@ class GraphClient(
             }
             val body = response.bodyAsText()
             val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
-            val usersResponse = json.decodeFromString<GroupMembersResponse>(body)
+            val usersResponse = json.decodeFromString<UsersResponse>(body)
             if (usersResponse.value.isEmpty()) {
                 throw UserNotFoundException(navIdent)
             }
@@ -202,7 +207,7 @@ class GraphClient(
             val body = response.bodyAsText()
             val json = Json { ignoreUnknownKeys = true; coerceInputValues = true }
             val groupsResponse = json.decodeFromString<MemberOfResponse>(body)
-            return groupsResponse.value.filter { it.securityEnabled }.map { it.displayName }
+            return groupsResponse.value.filter { it.securityEnabled }.map { it.displayName ?: "Unknown Role/Group" }
         } catch (e: Exception) {
             log.error("Error fetching groups for user $entraIdUUID: ${e.message}")
             throw e
