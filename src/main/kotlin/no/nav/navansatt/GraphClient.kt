@@ -54,7 +54,7 @@ data class MemberOfResponse(
 @Serializable
 data class Group (
     val displayName: String? = "Unknown Role/Group",
-    val securityEnabled: Boolean
+    val securityEnabled: Boolean = false
 )
 
 class UserNotFoundException(userId: String) : RuntimeException("User with ID $userId not found")
