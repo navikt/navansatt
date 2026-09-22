@@ -13,10 +13,18 @@
         <kotlin.version>2.4.10</kotlin.version>
         <ktor.version>3.5.2</ktor.version>
         <netty.version>4.2.17.Final</netty.version>
+        <byte-buddy.version>1.18.2</byte-buddy.version>
     </properties>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-bom</artifactId>
+                <version>${kotlin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <!-- Pin jackson-databind: logstash-logback-encoder pulls in the vulnerable 3.0.1 -->
             <dependency>
                 <groupId>tools.jackson.core</groupId>
@@ -149,6 +157,12 @@
             <scope>test</scope>
         </dependency>
         <dependency>
+            <groupId>net.bytebuddy</groupId>
+            <artifactId>byte-buddy-agent</artifactId>
+            <version>${byte-buddy.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>io.ktor</groupId>
             <artifactId>ktor-client-mock-jvm</artifactId>
             <scope>test</scope>
@@ -223,7 +237,10 @@
             </plugin>
             <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <version>3.5.6</version>
+                <version>3.6.0</version>
+                <configuration>
+                    <argLine>-javaagent:${settings.localRepository}/net/bytebuddy/byte-buddy-agent/${byte-buddy.version}/byte-buddy-agent-${byte-buddy.version}.jar</argLine>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
