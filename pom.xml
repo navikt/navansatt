@@ -12,7 +12,7 @@
     <properties>
         <kotlin.version>2.4.20</kotlin.version>
         <ktor.version>3.6.0</ktor.version>
-        <netty.version>4.2.18.Final</netty.version>
+        <netty.version>4.2.19.Final</netty.version>
         <byte-buddy.version>1.18.14</byte-buddy.version>
     </properties>
 
@@ -25,11 +25,19 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-            <!-- Pin jackson-databind: logstash-logback-encoder pulls in the vulnerable 3.0.1 -->
+            <!-- Pin jackson 3 -->
             <dependency>
                 <groupId>tools.jackson.core</groupId>
                 <artifactId>jackson-databind</artifactId>
                 <version>3.2.3</version>
+            </dependency>
+            <!-- Pin all transitive Jackson 2 artifacts (e.g. from com.auth0:java-jwt) -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>2.22.3</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
             <dependency>
                 <groupId>io.ktor</groupId>
