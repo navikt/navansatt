@@ -3,7 +3,7 @@ name: "Dev: navansatt deploy to dev-gcp"
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * SUN'
+    - cron: '0 5 * * *'
 
 jobs:
   build-backend-and-publish-docker:
